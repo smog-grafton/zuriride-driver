@@ -1,4 +1,3 @@
-
 class ZoneListModel {
   String? responseCode;
   String? message;
@@ -8,17 +7,28 @@ class ZoneListModel {
   List<Data>? data;
   List<String>? errors;
 
-  ZoneListModel({this.responseCode, this.message, this.totalSize, this.limit, this.offset, this.data, this.errors});
+  ZoneListModel(
+      {this.responseCode,
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data,
+      this.errors});
 
   ZoneListModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
       data = <Data>[];
-      json['data'].forEach((v) { data!.add(Data.fromJson(v)); });
+      json['data'].forEach((v) {
+        data!.add(Data.fromJson(v));
+      });
     }
     errors = json['errors'].cast<String>();
   }
@@ -32,14 +42,27 @@ class Data {
   bool? isActive;
   String? createdAt;
 
-  Data({this.id, this.name, this.readableId, this.zoneCoordinates, this.isActive, this.createdAt});
+  Data(
+      {this.id,
+      this.name,
+      this.readableId,
+      this.zoneCoordinates,
+      this.isActive,
+      this.createdAt});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    readableId = json['readable_id'];
-    zoneCoordinates = json['zone_coordinates'] != null ? ZoneCoordinates.fromJson(json['zone_coordinates']) : null;
-    isActive = json['is_active'];
+    readableId = json['readable_id'] != null
+        ? int.tryParse(json['readable_id'].toString())
+        : null;
+    zoneCoordinates = json['zone_coordinates'] != null
+        ? ZoneCoordinates.fromJson(json['zone_coordinates'])
+        : null;
+    isActive = json['is_active'] != null
+        ? (json['is_active'].toString() == '1' ||
+            json['is_active'].toString() == 'true')
+        : null;
     createdAt = json['created_at'];
   }
 }
@@ -55,7 +78,9 @@ class ZoneCoordinates {
     if (json['coordinates'] != null) {
       coordinatesPoint = <LatLngPoint>[];
       json['coordinates'].forEach((obj) {
-        obj.forEach((v){coordinatesPoint!.add(LatLngPoint(v[1], v[0]));});
+        obj.forEach((v) {
+          coordinatesPoint!.add(LatLngPoint(v[1], v[0]));
+        });
       });
     }
   }
@@ -66,4 +91,3 @@ class LatLngPoint {
   final double longitude;
   LatLngPoint(this.latitude, this.longitude);
 }
-

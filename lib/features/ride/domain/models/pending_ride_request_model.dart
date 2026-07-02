@@ -8,23 +8,27 @@ class PendingRideRequestModel {
   String? offset;
   List<TripDetail>? data;
 
-
-  PendingRideRequestModel({this.responseCode, this.message, this.totalSize, this.limit, this.offset, this.data});
+  PendingRideRequestModel(
+      {this.responseCode,
+      this.message,
+      this.totalSize,
+      this.limit,
+      this.offset,
+      this.data});
 
   PendingRideRequestModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
       data = <TripDetail>[];
-      json['data'].forEach((v) { data!.add(TripDetail.fromJson(v)); });
+      json['data'].forEach((v) {
+        data!.add(TripDetail.fromJson(v));
+      });
     }
-
   }
-
-
 }
-
-

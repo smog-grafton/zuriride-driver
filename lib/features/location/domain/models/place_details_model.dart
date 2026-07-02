@@ -3,12 +3,11 @@ class PlaceDetailsModel {
   String? message;
   Data? data;
 
-
-  PlaceDetailsModel(
-      {this.responseCode,
-        this.message,
-        this.data,
-        });
+  PlaceDetailsModel({
+    this.responseCode,
+    this.message,
+    this.data,
+  });
 
   PlaceDetailsModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -34,8 +33,7 @@ class Data {
   Data({this.result, this.status});
 
   Data.fromJson(Map<String, dynamic> json) {
-    result =
-    json['result'] != null ? Result.fromJson(json['result']) : null;
+    result = json['result'] != null ? Result.fromJson(json['result']) : null;
     status = json['status'];
   }
 
@@ -68,20 +66,20 @@ class Result {
 
   Result(
       {this.addressComponents,
-        this.adrAddress,
-        this.formattedAddress,
-        this.geometry,
-        this.icon,
-        this.iconBackgroundColor,
-        this.iconMaskBaseUri,
-        this.name,
-        this.photos,
-        this.placeId,
-        this.reference,
-        this.types,
-        this.url,
-        this.utcOffset,
-        this.vicinity});
+      this.adrAddress,
+      this.formattedAddress,
+      this.geometry,
+      this.icon,
+      this.iconBackgroundColor,
+      this.iconMaskBaseUri,
+      this.name,
+      this.photos,
+      this.placeId,
+      this.reference,
+      this.types,
+      this.url,
+      this.utcOffset,
+      this.vicinity});
 
   Result.fromJson(Map<String, dynamic> json) {
     if (json['address_components'] != null) {
@@ -92,9 +90,8 @@ class Result {
     }
     adrAddress = json['adr_address'];
     formattedAddress = json['formatted_address'];
-    geometry = json['geometry'] != null
-        ? Geometry.fromJson(json['geometry'])
-        : null;
+    geometry =
+        json['geometry'] != null ? Geometry.fromJson(json['geometry']) : null;
     icon = json['icon'];
     iconBackgroundColor = json['icon_background_color'];
     iconMaskBaseUri = json['icon_mask_base_uri'];
@@ -109,7 +106,9 @@ class Result {
     reference = json['reference'];
     types = json['types'].cast<String>();
     url = json['url'];
-    utcOffset = json['utc_offset'];
+    utcOffset = json['utc_offset'] != null
+        ? int.tryParse(json['utc_offset'].toString())
+        : null;
     vicinity = json['vicinity'];
   }
 
@@ -170,12 +169,10 @@ class Geometry {
   Geometry({this.location, this.viewport});
 
   Geometry.fromJson(Map<String, dynamic> json) {
-    location = json['location'] != null
-        ? Location.fromJson(json['location'])
-        : null;
-    viewport = json['viewport'] != null
-        ? Viewport.fromJson(json['viewport'])
-        : null;
+    location =
+        json['location'] != null ? Location.fromJson(json['location']) : null;
+    viewport =
+        json['viewport'] != null ? Viewport.fromJson(json['viewport']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -197,8 +194,8 @@ class Location {
   Location({this.lat, this.lng});
 
   Location.fromJson(Map<String, dynamic> json) {
-    lat = json['lat'];
-    lng = json['lng'];
+    lat = json['lat'] != null ? double.tryParse(json['lat'].toString()) : null;
+    lng = json['lng'] != null ? double.tryParse(json['lng'].toString()) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -216,12 +213,10 @@ class Viewport {
   Viewport({this.northeast, this.southwest});
 
   Viewport.fromJson(Map<String, dynamic> json) {
-    northeast = json['northeast'] != null
-        ? Location.fromJson(json['northeast'])
-        : null;
-    southwest = json['southwest'] != null
-        ? Location.fromJson(json['southwest'])
-        : null;
+    northeast =
+        json['northeast'] != null ? Location.fromJson(json['northeast']) : null;
+    southwest =
+        json['southwest'] != null ? Location.fromJson(json['southwest']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -245,10 +240,12 @@ class Photos {
   Photos({this.height, this.htmlAttributions, this.photoReference, this.width});
 
   Photos.fromJson(Map<String, dynamic> json) {
-    height = json['height'];
+    height =
+        json['height'] != null ? int.tryParse(json['height'].toString()) : null;
     htmlAttributions = json['html_attributions'].cast<String>();
     photoReference = json['photo_reference'];
-    width = json['width'];
+    width =
+        json['width'] != null ? int.tryParse(json['width'].toString()) : null;
   }
 
   Map<String, dynamic> toJson() {

@@ -6,27 +6,27 @@ class CategoryModel {
   String? offset;
   List<Category>? data;
 
-
-  CategoryModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  CategoryModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   CategoryModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     if (json['data'] != null) {
       data = <Category>[];
       json['data'].forEach((v) {
         data!.add(Category.fromJson(v));
       });
     }
-
   }
 
   Map<String, dynamic> toJson() {
@@ -56,7 +56,7 @@ class Category {
     id = json['id'];
     name = json['name'];
     image = json['image'];
-   type = json['type'];
+    type = json['type'];
   }
 
   Map<String, dynamic> toJson() {
@@ -69,5 +69,3 @@ class Category {
     return data;
   }
 }
-
-

@@ -6,20 +6,21 @@ class LeaderBoardModel {
   String? offset;
   List<Leader>? data;
 
-
-  LeaderBoardModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-     });
+  LeaderBoardModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   LeaderBoardModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
@@ -28,9 +29,7 @@ class LeaderBoardModel {
         data!.add(Leader.fromJson(v));
       });
     }
-
   }
-
 }
 
 class Leader {
@@ -43,13 +42,12 @@ class Leader {
 
   Leader.fromJson(Map<String, dynamic> json) {
     driverId = json['driver_id'];
-    totalRecords = json['total_records'];
+    totalRecords = json['total_records'] != null
+        ? int.tryParse(json['total_records'].toString())
+        : null;
     income = json['income'];
-    driver =
-    json['driver'] != null ? Driver.fromJson(json['driver']) : null;
+    driver = json['driver'] != null ? Driver.fromJson(json['driver']) : null;
   }
-
-
 }
 
 class Driver {
@@ -61,16 +59,15 @@ class Driver {
   String? phone;
   String? profileImage;
 
-
-  Driver(
-      {this.id,
-        this.userLevelId,
-        this.firstName,
-        this.lastName,
-        this.email,
-        this.phone,
-        this.profileImage,
-       });
+  Driver({
+    this.id,
+    this.userLevelId,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phone,
+    this.profileImage,
+  });
 
   Driver.fromJson(Map<String, dynamic> json) {
     id = json['id'];

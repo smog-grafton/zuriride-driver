@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final int maxLines;
   final bool prefix;
   final bool read;
+  final double borderRadius;
 
   const CustomTextField({
     super.key,
@@ -20,6 +21,7 @@ class CustomTextField extends StatefulWidget {
     this.focusNode,
     this.inputAction = TextInputAction.done,
     this.maxLines = 1,
+    this.borderRadius = 50,
     this.prefix = false,
     this.read = false,
   });
@@ -41,7 +43,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void didUpdateWidget(CustomTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.focusNode != oldWidget.focusNode) {
-      // Dispose the node only if this state created it internally.
       if (oldWidget.focusNode == null) {
         _internalFocusNode.dispose();
       }
@@ -79,21 +80,21 @@ class _CustomTextFieldState extends State<CustomTextField> {
         filled: true,
         fillColor: Theme.of(context).cardColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+          borderRadius: BorderRadius.circular(widget.borderRadius),
           borderSide: BorderSide(
             color: Theme.of(context).hintColor.withValues(alpha: 0.3),
             width: 0.5,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+          borderRadius: BorderRadius.circular(widget.borderRadius),
           borderSide: BorderSide(
             color: Theme.of(context).hintColor.withValues(alpha: 0.3),
             width: 0.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+          borderRadius: BorderRadius.circular(widget.borderRadius),
           borderSide: BorderSide(
             color: Theme.of(context).primaryColor,
             width: 1,

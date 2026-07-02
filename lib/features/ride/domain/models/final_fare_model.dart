@@ -3,20 +3,17 @@ class FinalFareModel {
   String? message;
   FinalFare? data;
 
-
-  FinalFareModel(
-      {this.responseCode,
-        this.message,
-        this.data,
-      });
+  FinalFareModel({
+    this.responseCode,
+    this.message,
+    this.data,
+  });
 
   FinalFareModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
     data = json['data'] != null ? FinalFare.fromJson(json['data']) : null;
-
   }
-
 }
 
 class FinalFare {
@@ -68,108 +65,86 @@ class FinalFare {
   String? rideStartTime;
   String? parcelStartTime;
 
-
   FinalFare(
       {this.id,
-        this.refId,
-        this.estimatedFare,
-        this.actualFare,
-        this.estimatedDistance,
-        this.paidFare,
-        this.actualDistance,
-        this.paymentStatus,
-        this.paymentMethod,
-        this.couponAmount,
-        this.discountAmount,
-        this.note,
-        this.otp,
-        this.riseRequestCount,
-        this.type,
-        this.createdAt,
-        this.entrance,
-        this.encodedPolyline,
-        this.currentStatus,
-        this.isPaused,
-        this.coupon,
-        this.discount,
-        this.screenshot,
-        this.distanceWiseFare,
-        this.pickupCoordinates,
-        this.pickupAddress,
-        this.destinationCoordinates,
-        this.destinationAddress,
-        this.startCoordinates,
-        this.dropCoordinates,
-        this.customerRequestCoordinates,
-        this.intermediateAddresses,
-        this.idleFee,
-        this.delayFee,
-        this.cancellationFee,
-        this.cancelledBy,
-        this.vatTax,
-        this.tips,
-        this.waitingTime,
-        this.delayTime,
-        this.idleTime,
-        this.actualTime,
-        this.estimatedTime,
-        this.rideCompleteTime,
-        this.parcelCompleteTime,
-        this.parcelStartTime,
-        this.rideStartTime
-      });
+      this.refId,
+      this.estimatedFare,
+      this.actualFare,
+      this.estimatedDistance,
+      this.paidFare,
+      this.actualDistance,
+      this.paymentStatus,
+      this.paymentMethod,
+      this.couponAmount,
+      this.discountAmount,
+      this.note,
+      this.otp,
+      this.riseRequestCount,
+      this.type,
+      this.createdAt,
+      this.entrance,
+      this.encodedPolyline,
+      this.currentStatus,
+      this.isPaused,
+      this.coupon,
+      this.discount,
+      this.screenshot,
+      this.distanceWiseFare,
+      this.pickupCoordinates,
+      this.pickupAddress,
+      this.destinationCoordinates,
+      this.destinationAddress,
+      this.startCoordinates,
+      this.dropCoordinates,
+      this.customerRequestCoordinates,
+      this.intermediateAddresses,
+      this.idleFee,
+      this.delayFee,
+      this.cancellationFee,
+      this.cancelledBy,
+      this.vatTax,
+      this.tips,
+      this.waitingTime,
+      this.delayTime,
+      this.idleTime,
+      this.actualTime,
+      this.estimatedTime,
+      this.rideCompleteTime,
+      this.parcelCompleteTime,
+      this.parcelStartTime,
+      this.rideStartTime});
 
   FinalFare.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     refId = json['ref_id'];
-    if(json['estimated_fare'] != null){
-      estimatedFare = json['estimated_fare'].toDouble();
-    }
-
-    if(json['actual_fare'] != null){
-      actualFare = json['actual_fare'].toDouble();
-    }
-
-    if(json['estimated_distance'] != null){
-      estimatedDistance = json['estimated_distance'].toDouble();
-    }
-    if(json['paid_fare'] != null){
-      paidFare = json['paid_fare'].toDouble();
-    }
-    if(json['actual_distance'] != null){
-      actualDistance = json['actual_distance'].toDouble();
-    }
-
-
+    estimatedFare = double.tryParse(json['estimated_fare'].toString());
+    actualFare = double.tryParse(json['actual_fare'].toString());
+    estimatedDistance = double.tryParse(json['estimated_distance'].toString());
+    paidFare = double.tryParse(json['paid_fare'].toString());
+    actualDistance = double.tryParse(json['actual_distance'].toString());
     paymentStatus = json['payment_status'];
     paymentMethod = json['payment_method'];
-    if(json['coupon_amount'] != null)
-    {
-      couponAmount = json['coupon_amount'].toDouble();
-    }
-    if(json['discount_amount'] != null){
-      discountAmount = json['discount_amount'].toDouble();
-    }else{
-      discountAmount = 0;
-    }
-
+    couponAmount = double.tryParse(json['coupon_amount'].toString());
+    discountAmount = double.tryParse(json['discount_amount'].toString());
     note = json['note'];
     otp = json['otp'];
-    riseRequestCount = json['rise_request_count'];
+    riseRequestCount = json['rise_request_count'] != null
+        ? int.tryParse(json['rise_request_count'].toString())
+        : null;
     type = json['type'];
     createdAt = json['created_at'];
     entrance = json['entrance'];
     encodedPolyline = json['encoded_polyline'];
     currentStatus = json['current_status'];
-    isPaused = json['is_paused'];
-    coupon =
-    json['coupon'] != null ? Coupon.fromJson(json['coupon']) : null;
-    discount = json['discount'] != null ? Discount.fromJson(json['discount']) : null;
+    isPaused = json['is_paused'] != null
+        ? (json['is_paused'].toString() == '1' ||
+            json['is_paused'].toString() == 'true')
+        : null;
+    coupon = json['coupon'] != null ? Coupon.fromJson(json['coupon']) : null;
+    discount =
+        json['discount'] != null ? Discount.fromJson(json['discount']) : null;
     screenshot = json['screenshot'];
-    if(json['distance_wise_fare'] != null){
-      distanceWiseFare = json['distance_wise_fare'].toDouble();
-    }
-
+    distanceWiseFare = double.tryParse(json['distance_wise_fare'].toString());
     pickupCoordinates = json['pickup_coordinates'] != null
         ? PickupCoordinates.fromJson(json['pickup_coordinates'])
         : null;
@@ -188,55 +163,24 @@ class FinalFare {
     customerRequestCoordinates = json['customer_request_coordinates'] != null
         ? PickupCoordinates.fromJson(json['customer_request_coordinates'])
         : null;
-
     intermediateAddresses = json['intermediate_addresses'];
-    if(json['idle_fee'] != null){
-      idleFee = json['idle_fee'].toDouble();
-    }
-    if(json['delay_fee'] != null){
-      delayFee = json['delay_fee'].toDouble();
-    }
-    if(json['cancellation_fee'] != null){
-      cancellationFee = json['cancellation_fee'].toDouble();
-    }
-
+    idleFee = double.tryParse(json['idle_fee'].toString());
+    delayFee = double.tryParse(json['delay_fee'].toString());
+    cancellationFee = double.tryParse(json['cancellation_fee'].toString());
     cancelledBy = json['cancelled_by'];
-    if(json['vat_tax'] != null){
-      vatTax = json['vat_tax'].toDouble();
-    }
-
-    if(json['tips'] != null){
-      tips = json['tips'].toDouble();
-    }
-    if(json['waiting_time'] != null){
-      waitingTime = json['waiting_time'].toDouble();
-    }
-    if(json['delay_time'] != null){
-      delayTime = json['delay_time'].toDouble();
-    }
-    if(json['idle_time'] != null){
-      idleTime = json['idle_time'].toDouble();
-    }
-    if(json['actual_time'] != null){
-      actualTime = json['actual_time'].toDouble();
-    }
-
-    if(json['estimated_time'] != null){
-      estimatedTime = json['estimated_time'].toDouble();
-    }
-
+    vatTax = double.tryParse(json['vat_tax'].toString());
+    tips = double.tryParse(json['tips'].toString());
+    waitingTime = double.tryParse(json['waiting_time'].toString());
+    delayTime = double.tryParse(json['delay_time'].toString());
+    idleTime = double.tryParse(json['idle_time'].toString());
+    actualTime = double.tryParse(json['actual_time'].toString());
+    estimatedTime = double.tryParse(json['estimated_time'].toString());
     rideCompleteTime = json['ride_complete_time'];
     rideStartTime = json['ride_start_time'];
     parcelStartTime = json['parcel_start_time'];
     parcelCompleteTime = json['parcel_complete_time'];
-
   }
-
 }
-
-
-
-
 
 class Coupon {
   String? id;
@@ -258,21 +202,21 @@ class Coupon {
 
   Coupon(
       {this.id,
-        this.name,
-        this.description,
-        this.customerId,
-        this.minTripAmount,
-        this.maxCouponAmount,
-        this.coupon,
-        this.amountType,
-        this.couponType,
-        this.couponCode,
-        this.limit,
-        this.startDate,
-        this.endDate,
-        this.rules,
-        this.isActive,
-        this.createdAt});
+      this.name,
+      this.description,
+      this.customerId,
+      this.minTripAmount,
+      this.maxCouponAmount,
+      this.coupon,
+      this.amountType,
+      this.couponType,
+      this.couponCode,
+      this.limit,
+      this.startDate,
+      this.endDate,
+      this.rules,
+      this.isActive,
+      this.createdAt});
 
   Coupon.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -285,16 +229,17 @@ class Coupon {
     amountType = json['amount_type'];
     couponType = json['coupon_type'];
     couponCode = json['coupon_code'];
-    limit = json['limit'];
+    limit =
+        json['limit'] != null ? int.tryParse(json['limit'].toString()) : null;
     startDate = json['start_date'];
     endDate = json['end_date'];
     rules = json['rules'];
-    isActive = json['is_active'];
+    isActive = json['is_active'] != null
+        ? int.tryParse(json['is_active'].toString())
+        : null;
     createdAt = json['created_at'];
   }
-
 }
-
 
 class PickupCoordinates {
   String? type;
@@ -306,7 +251,6 @@ class PickupCoordinates {
     type = json['type'];
     coordinates = json['coordinates'].cast<double>();
   }
-
 }
 
 class Discount {
@@ -331,23 +275,23 @@ class Discount {
 
   Discount(
       {this.id,
-        this.title,
-        this.shortDescription,
-        this.termsConditions,
-        this.image,
-        this.discountAmount,
-        this.zoneDiscount,
-        this.customerLevelDiscount,
-        this.customerDiscount,
-        this.moduleDiscount,
-        this.discountAmountType,
-        this.maxDiscountAmount,
-        this.minTripAmount,
-        this.limit,
-        this.startDate,
-        this.endDate,
-        this.isActive,
-        this.createdAt});
+      this.title,
+      this.shortDescription,
+      this.termsConditions,
+      this.image,
+      this.discountAmount,
+      this.zoneDiscount,
+      this.customerLevelDiscount,
+      this.customerDiscount,
+      this.moduleDiscount,
+      this.discountAmountType,
+      this.maxDiscountAmount,
+      this.minTripAmount,
+      this.limit,
+      this.startDate,
+      this.endDate,
+      this.isActive,
+      this.createdAt});
 
   Discount.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -355,18 +299,28 @@ class Discount {
     shortDescription = json['short_description'];
     termsConditions = json['terms_conditions'];
     image = json['image'];
-    discountAmount = json['discount_amount'];
+    discountAmount = json['discount_amount'] != null
+        ? int.tryParse(json['discount_amount'].toString())
+        : null;
     zoneDiscount = json['zone_discount'].cast<String>();
     customerLevelDiscount = json['customer_level_discount'].cast<String>();
     customerDiscount = json['customer_discount'].cast<String>();
     moduleDiscount = json['module_discount'].cast<String>();
     discountAmountType = json['discount_amount_type'];
-    maxDiscountAmount = json['max_discount_amount'];
-    minTripAmount = json['min_trip_amount'];
-    limit = json['limit'];
+    maxDiscountAmount = json['max_discount_amount'] != null
+        ? int.tryParse(json['max_discount_amount'].toString())
+        : null;
+    minTripAmount = json['min_trip_amount'] != null
+        ? int.tryParse(json['min_trip_amount'].toString())
+        : null;
+    limit =
+        json['limit'] != null ? int.tryParse(json['limit'].toString()) : null;
     startDate = json['start_date'];
     endDate = json['end_date'];
-    isActive = json['is_active'];
+    isActive = json['is_active'] != null
+        ? (json['is_active'].toString() == '1' ||
+            json['is_active'].toString() == 'true')
+        : null;
     createdAt = json['created_at'];
   }
 

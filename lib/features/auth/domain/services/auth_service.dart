@@ -4,9 +4,9 @@ import 'package:ride_sharing_user_app/features/auth/domain/models/signup_body.da
 import 'package:ride_sharing_user_app/features/auth/domain/repositories/auth_repository_interface.dart';
 import 'package:ride_sharing_user_app/features/auth/domain/services/auth_service_interface.dart';
 
-class AuthService implements AuthServiceInterface{
- final AuthRepositoryInterface authRepositoryInterface;
- AuthService({required this.authRepositoryInterface});
+class AuthService implements AuthServiceInterface {
+  final AuthRepositoryInterface authRepositoryInterface;
+  AuthService({required this.authRepositoryInterface});
 
   @override
   Future changePassword(String oldPassword, String password) {
@@ -15,7 +15,7 @@ class AuthService implements AuthServiceInterface{
 
   @override
   bool clearSharedAddress() {
-   return authRepositoryInterface.clearSharedAddress();
+    return authRepositoryInterface.clearSharedAddress();
   }
 
   @override
@@ -75,7 +75,7 @@ class AuthService implements AuthServiceInterface{
 
   @override
   Future logOut() {
-   return authRepositoryInterface.logOut();
+    return authRepositoryInterface.logOut();
   }
 
   @override
@@ -84,13 +84,39 @@ class AuthService implements AuthServiceInterface{
   }
 
   @override
-  Future registration({required SignUpBody signUpBody, XFile? profileImage, List<MultipartBody>? identityImage, List<MultipartDocument>? documents}) {
-    return authRepositoryInterface.registration(signUpBody: signUpBody,profileImage: profileImage, identityImage: identityImage,documents: documents);
+  Future registration(
+      {required SignUpBody signUpBody,
+      XFile? profileImage,
+      List<MultipartBody>? identityImage,
+      List<MultipartDocument>? documents,
+      Map<String, dynamic>? additionalData,
+      List<MultipartBody>? additionalFiles}) {
+    return authRepositoryInterface.registration(
+        signUpBody: signUpBody,
+        profileImage: profileImage,
+        identityImage: identityImage,
+        documents: documents,
+        additionalFiles: additionalFiles,
+        additionalData: additionalData);
   }
 
   @override
-  Future registerWithOtp({required SignUpBody signUpBody, XFile? profileImage, List<MultipartBody>? identityImage, List<MultipartDocument>? documents, required bool updateFromRegistration}) {
-    return authRepositoryInterface.registerWithOtp(signUpBody: signUpBody,profileImage: profileImage, identityImage: identityImage,documents: documents, updateFromRegistration: updateFromRegistration);
+  Future registerWithOtp(
+      {required SignUpBody signUpBody,
+      XFile? profileImage,
+      List<MultipartBody>? identityImage,
+      List<MultipartDocument>? documents,
+      required bool updateFromRegistration,
+      Map<String, dynamic>? additionalData,
+      List<MultipartBody>? additionalFiles}) {
+    return authRepositoryInterface.registerWithOtp(
+        signUpBody: signUpBody,
+        profileImage: profileImage,
+        identityImage: identityImage,
+        documents: documents,
+        updateFromRegistration: updateFromRegistration,
+        additionalFiles: additionalFiles,
+        additionalData: additionalData);
   }
 
   @override
@@ -104,7 +130,7 @@ class AuthService implements AuthServiceInterface{
   }
 
   @override
-  Future<void> saveUserCredential(String code,String number, String password) {
+  Future<void> saveUserCredential(String code, String number, String password) {
     return authRepositoryInterface.saveUserCredential(code, number, password);
   }
 
@@ -155,22 +181,60 @@ class AuthService implements AuthServiceInterface{
 
   @override
   Future remainingTime() {
-   return  authRepositoryInterface.remainingTime();
+    return authRepositoryInterface.remainingTime();
   }
 
   @override
   String getLoginCountryCode() {
-   return  authRepositoryInterface.getLoginCountryCode();
+    return authRepositoryInterface.getLoginCountryCode();
   }
 
- @override
- Future verifyFirebaseOtp({required String phone, required String otp, required String session}) async{
-   return await authRepositoryInterface.verifyFirebaseOtp(phone: phone, otp: otp, session: session);
- }
+  @override
+  Future verifyFirebaseOtp(
+      {required String phone,
+      required String otp,
+      required String session}) async {
+    return await authRepositoryInterface.verifyFirebaseOtp(
+        phone: phone, otp: otp, session: session);
+  }
 
- @override
- Future isUserRegistered({required String phone}) async{
-   return await authRepositoryInterface.isUserRegistered(phone: phone);
- }
+  @override
+  Future isUserRegistered({required String phone}) async {
+    return await authRepositoryInterface.isUserRegistered(phone: phone);
+  }
 
+  @override
+  Future<bool> isBiometricEnabled() {
+    return authRepositoryInterface.isBiometricEnabled();
+  }
+
+  @override
+  Future<dynamic> addOrUpdateOnLocalDatabase(String key, String? value) async {
+    return await authRepositoryInterface.addOrUpdateOnLocalDatabase(key, value);
+  }
+
+  @override
+  Future<void> setBiometricEnabled(bool isActive) async {
+    return await authRepositoryInterface.setBiometricEnabled(isActive);
+  }
+
+  @override
+  Future<String> getDataFromLocalDatabase(String key) {
+    return authRepositoryInterface.getDataFromLocalDatabase(key);
+  }
+
+  @override
+  Future<String> getBiometricCountryCode(String key) {
+    return authRepositoryInterface.getBiometricCountryCode(key);
+  }
+
+  @override
+  Future<String> getBiometricPhone(String key) {
+    return authRepositoryInterface.getBiometricPhone(key);
+  }
+
+  @override
+  Future<dynamic> pinVerify(String password) {
+    return authRepositoryInterface.pinVerify(password);
+  }
 }

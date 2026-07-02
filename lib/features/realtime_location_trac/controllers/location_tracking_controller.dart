@@ -10,8 +10,7 @@ import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
-
-class LocationTrackingController extends GetxController implements GetxService{
+class LocationTrackingController extends GetxController implements GetxService {
   final LocationTrackingServiceInterface locationTrackingServiceInterface;
   LocationTrackingController({required this.locationTrackingServiceInterface});
 
@@ -27,41 +26,48 @@ class LocationTrackingController extends GetxController implements GetxService{
   Set<Polyline> polylines = {};
 
   @override
-  void onInit() async{
-    car = await Get.find<RiderMapController>().convertAssetToUnit8List(Images.carIconTop, width: 30);
-    bike = await Get.find<RiderMapController>().convertAssetToUnit8List(Images.bike, width: 30);
-    destination = await Get.find<RiderMapController>().convertAssetToUnit8List(Images.targetLocationIcon, width: 30);
+  void onInit() async {
+    car = await Get.find<RiderMapController>()
+        .convertAssetToUnit8List(Images.carIconTop, width: 30);
+    bike = await Get.find<RiderMapController>()
+        .convertAssetToUnit8List(Images.bike, width: 30);
+    destination = await Get.find<RiderMapController>()
+        .convertAssetToUnit8List(Images.targetLocationIcon, width: 30);
     super.onInit();
   }
 
-
-  void getTrackingDetails(String trackingId) async{
-
-    Response? response = await locationTrackingServiceInterface.getRideTrackingDetails(trackingId);
-    if(response!.statusCode == 200){
+  void getTrackingDetails(String trackingId) async {
+    Response? response = await locationTrackingServiceInterface
+        .getRideTrackingDetails(trackingId);
+    if (response!.statusCode == 200) {
       rideTrackDetailsModel = RideTrackDetailsModel.fromJson(response.body);
-      _polylineCoordinateList = Get.find<RiderMapController>().decodeEncodedPolyline(rideTrackDetailsModel?.data?.encodedPolyline ?? '');
-      updateDriverMarker(_polylineCoordinateList, rideTrackDetailsModel?.data?.vehicleType);
+      _polylineCoordinateList = Get.find<RiderMapController>()
+          .decodeEncodedPolyline(
+              rideTrackDetailsModel?.data?.encodedPolyline ?? '');
+      updateDriverMarker(
+          _polylineCoordinateList, rideTrackDetailsModel?.data?.vehicleType);
       _addPolyLine(_polylineCoordinateList);
       currentPosition = _polylineCoordinateList.first;
-    }else{
-      showCustomSnackBar('invalid_tracking_link'.tr, subMessage: 'the_tracking_link_is_invalid_expired'.tr);
+    } else {
+      showCustomSnackBar('invalid_tracking_link'.tr,
+          subMessage: 'the_tracking_link_is_invalid_expired'.tr);
       LoginHelper().checkLoginRoutes(null);
     }
 
     update();
   }
 
-  void updateDriverMarker(List<LatLng> latLngList, String? vehicleCategoryType) async{
+  void updateDriverMarker(
+      List<LatLng> latLngList, String? vehicleCategoryType) async {
     markers = {};
 
-    if(latLngList.isNotEmpty) {
+    if (latLngList.isNotEmpty) {
       markers.add(Marker(
         markerId: const MarkerId('driverPosition'),
         position: latLngList.first,
         rotation: _calculateBearing(
           latLngList.first,
-          latLngList.length > 1 ?  latLngList[1] : latLngList.last,
+          latLngList.length > 1 ? latLngList[1] : latLngList.last,
         ),
         draggable: false,
         zIndexInt: 2,
@@ -120,6 +126,4 @@ class LocationTrackingController extends GetxController implements GetxService{
 
     update();
   }
-
 }
-

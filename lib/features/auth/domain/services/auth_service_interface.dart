@@ -5,11 +5,25 @@ import 'package:ride_sharing_user_app/features/auth/domain/models/signup_body.da
 abstract class AuthServiceInterface {
   Future<dynamic> login({required String phone, required String password});
   Future<dynamic> logOut();
-  Future<dynamic> registration({required SignUpBody signUpBody, XFile? profileImage, List<MultipartBody>? identityImage, List<MultipartDocument>? documents});
-  Future<dynamic> registerWithOtp({required SignUpBody signUpBody, XFile? profileImage, List<MultipartBody>? identityImage, List<MultipartDocument>? documents, required bool updateFromRegistration});
+  Future<dynamic> registration(
+      {required SignUpBody signUpBody,
+      XFile? profileImage,
+      List<MultipartBody>? identityImage,
+      List<MultipartDocument>? documents,
+      Map<String, dynamic>? additionalData,
+      List<MultipartBody>? additionalFiles});
+  Future<dynamic> registerWithOtp(
+      {required SignUpBody signUpBody,
+      XFile? profileImage,
+      List<MultipartBody>? identityImage,
+      List<MultipartDocument>? documents,
+      required bool updateFromRegistration,
+      Map<String, dynamic>? additionalData,
+      List<MultipartBody>? additionalFiles});
   Future<dynamic> sendOtp({required String phone});
   Future<dynamic> verifyOtp({required String phone, required String otp});
-  Future<dynamic> verifyFirebaseOtp({required String phone, required String otp, required String session});
+  Future<dynamic> verifyFirebaseOtp(
+      {required String phone, required String otp, required String session});
   Future<dynamic> resetPassword(String phoneOrEmail, String password);
   Future<dynamic> changePassword(String oldPassword, String password);
   Future<dynamic> updateToken();
@@ -36,4 +50,11 @@ abstract class AuthServiceInterface {
   Future<dynamic> remainingTime();
   String getLoginCountryCode();
   Future<dynamic> isUserRegistered({required String phone});
+  Future<bool> isBiometricEnabled();
+  Future<dynamic> addOrUpdateOnLocalDatabase(String key, String? value);
+  Future<void> setBiometricEnabled(bool isActive);
+  Future<String> getDataFromLocalDatabase(String key);
+  Future<String> getBiometricPhone(String key);
+  Future<String> getBiometricCountryCode(String key);
+  Future<dynamic> pinVerify(String password);
 }

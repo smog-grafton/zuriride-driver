@@ -7,14 +7,13 @@ import 'package:ride_sharing_user_app/features/profile/domain/repositories/profi
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_body.dart';
 
-class ProfileRepository implements ProfileRepositoryInterface{
+class ProfileRepository implements ProfileRepositoryInterface {
   ApiClient apiClient;
   ProfileRepository({required this.apiClient});
 
   @override
   Future<Response?> profileOnlineOffline() async {
-    return await apiClient.postData(AppConstants.onlineOfflineStatus,
-        {});
+    return await apiClient.postData(AppConstants.onlineOfflineStatus, {});
   }
 
   @override
@@ -39,38 +38,43 @@ class ProfileRepository implements ProfileRepositoryInterface{
 
   @override
   Future<Response?> getCategoryList(int offset) async {
-    return await apiClient.getData('${AppConstants.vehicleMainCategory}$offset');
+    return await apiClient
+        .getData('${AppConstants.vehicleMainCategory}$offset');
   }
 
   @override
-  Future<Response?> addNewVehicle(VehicleBody vehicleBody, List<MultipartDocument> file ) async {
+  Future<Response?> addNewVehicle(
+      VehicleBody vehicleBody, List<MultipartDocument> file) async {
     return await apiClient.postMultipartData(
-        AppConstants.addNewVehicle,
-        vehicleBody.toJson(),
-        [],
-        null,
-        file
-
-    );
+        AppConstants.addNewVehicle, vehicleBody.toJson(), [], null, file);
   }
 
   @override
-  Future<Response?> updateVehicle(VehicleBody vehicleBody,String driverId) async {
+  Future<Response?> updateVehicle(
+      VehicleBody vehicleBody, String driverId) async {
     return await apiClient.postData(
-        AppConstants.updateVehicle+driverId,
-        vehicleBody.toJson(),
+      AppConstants.updateVehicle + driverId,
+      vehicleBody.toJson(),
     );
   }
 
   @override
-  Future<Response?> updateProfileInfo(
-      String firstName, String lastname,String email,
-      String identityType, String identityNumber,
-      XFile? profile, List<MultipartBody>? identityImage,
-      List<String> services,
-      List<String> oldDocuments,
-      List<MultipartDocument> newDocuments
-      ) async {
+  Future<Response?> updateProfileInfo({
+    required String firstName,
+    required String lastname,
+    required String email,
+    required String identityType,
+    required String identityNumber,
+    XFile? profile,
+    List<MultipartBody>? identityImage,
+    required List<String> services,
+    required List<String> oldDocuments,
+    required List<MultipartDocument> newDocuments,
+    required String gender,
+    Map<String, dynamic>? additionalData,
+    List<MultipartBody>? additionalFiles,
+    Map<String, dynamic>? oldAdditionalImages,
+  }) async {
     Map<String, String> fields = {};
 
     fields.addAll(<String, String>{
@@ -79,11 +83,36 @@ class ProfileRepository implements ProfileRepositoryInterface{
       'last_name': lastname,
       'identification_type': identityType,
       'identification_number': identityNumber,
-      'email':email,
+      'email': email,
       'service': jsonEncode(services),
-      'existing_documents': jsonEncode(oldDocuments)
+      'existing_documents': jsonEncode(oldDocuments),
+      'gender': gender
     });
-    return await apiClient.postMultipartData(AppConstants.updateProfileInfo, fields, identityImage!, MultipartBody('profile_image', profile),newDocuments);
+
+    Map<String, String> bodyData = {};
+    additionalData?.forEach((key, value) {
+      if (value is String) {
+        bodyData['additional_data[$key]'] = value;
+      } else if (value is List<dynamic>) {
+        for (int i = 0; i < value.length; i++) {
+          bodyData['additional_data[$key][$i]'] = value[i];
+        }
+      }
+    });
+
+    oldAdditionalImages?.forEach((key, value) {
+      for (int i = 0; i < value.length; i++) {
+        bodyData['existing_additional_data[$key][$i]'] = value[i];
+      }
+    });
+
+    List<MultipartBody> images = [];
+    images.addAll(identityImage ?? []);
+    images.addAll(additionalFiles ?? []);
+
+    return await apiClient.postMultipartData(AppConstants.updateProfileInfo,
+        fields, images, MultipartBody('profile_image', profile), newDocuments,
+        additionalData: bodyData);
   }
 
   @override
@@ -120,6 +149,4 @@ class ProfileRepository implements ProfileRepositoryInterface{
     // TODO: implement update
     throw UnimplementedError();
   }
-
-
 }

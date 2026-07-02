@@ -8,7 +8,6 @@ import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 
 class FileValidationHelper {
-
   /// Validates and picks an image with automatic config retrieval and error display
   /// Returns the picked XFile if valid, null otherwise
   static Future<XFile?> validateAndPickImage({
@@ -18,7 +17,6 @@ class FileValidationHelper {
     double? maxWidth,
   }) async {
     try {
-
       // Step 1: Pick the image
       final picker = ImagePicker();
       final pickedImage = await picker.pickImage(
@@ -29,7 +27,6 @@ class FileValidationHelper {
       );
 
       if (pickedImage == null) return null;
-
 
       // Step 2: Validate file extension
       final extensionError = validateFileExtension(
@@ -43,13 +40,13 @@ class FileValidationHelper {
 
       // Step 3: Get config and validate size
       final configModel = Get.find<SplashController>().config;
-      final maxSize = configModel?.maxImageUploadSize ?? 20971520; // Default 20 MB
+      final maxSize =
+          configModel?.maxImageUploadSize ?? 20971520; // Default 20 MB
 
       final validationError = await validateFileSizeAsync(
         file: pickedImage,
         maxSizeInBytes: maxSize,
       );
-
 
       // Step 4: Show error if validation failed
       if (validationError != null) {
@@ -59,7 +56,6 @@ class FileValidationHelper {
 
       // Step 5: Return valid file
       return pickedImage;
-
     } catch (error) {
       debugPrint('Image picking error: $error');
       return null;
@@ -80,7 +76,6 @@ class FileValidationHelper {
 
       if (pickedImages.isEmpty) return [];
 
-
       // Step 2: Validate file extensions
       final extensionError = validateMultipleFileExtensions(
         files: pickedImages,
@@ -93,13 +88,13 @@ class FileValidationHelper {
 
       // Step 3: Get config and validate sizes
       final configModel = Get.find<SplashController>().config;
-      final maxSize = configModel?.maxImageUploadSize ?? 20971520; // Default 20 MB
+      final maxSize =
+          configModel?.maxImageUploadSize ?? 20971520; // Default 20 MB
 
       final validationError = await validateMultipleFilesSize(
         files: pickedImages,
         maxSizeInBytes: maxSize,
       );
-
 
       // Step 4: Show error if validation failed
       if (validationError != null) {
@@ -109,7 +104,6 @@ class FileValidationHelper {
 
       // Step 5: Return valid files
       return pickedImages;
-
     } catch (error) {
       debugPrint('Multiple images picking error: $error');
       return [];
@@ -135,7 +129,6 @@ class FileValidationHelper {
 
       // Return error if validation failed
       return _buildInvalidFileTypeError();
-
     } catch (e) {
       return _buildValidationFailedError(e);
     }
@@ -149,7 +142,7 @@ class FileValidationHelper {
 
     final normalizedMimeType = mimeType.toLowerCase();
     return AppConstants.allowedImageExtensions.any(
-          (extension) => normalizedMimeType.contains(extension),
+      (extension) => normalizedMimeType.contains(extension),
     );
   }
 
@@ -231,7 +224,6 @@ class FileValidationHelper {
     }
   }
 
-
   /// Validates multiple files size
   /// Returns null if all valid, otherwise returns error message for first invalid file
   static Future<String?> validateMultipleFilesSize({
@@ -301,14 +293,16 @@ class FileValidationHelper {
   }) async {
     try {
       final configModel = Get.find<SplashController>().config;
-      final maxSize = configModel?.maxFileUploadSize ?? 20971520; // Default 20 MB
+      final maxSize =
+          configModel?.maxFileUploadSize ?? 20971520; // Default 20 MB
 
       final fileSize = file.size;
 
       if (fileSize > maxSize) {
         final maxSizeInMB = maxSize / (1024 * 1024);
         final fileSizeInMB = fileSize / (1024 * 1024);
-        showCustomSnackBar('${'file_size'.tr} ${fileSizeInMB.toStringAsFixed(2)} ${'mb'.tr} ${'exceeds_maximum_allowed_size'.tr} ${maxSizeInMB.toStringAsFixed(2)} ${'mb'.tr}');
+        showCustomSnackBar(
+            '${'file_size'.tr} ${fileSizeInMB.toStringAsFixed(2)} ${'mb'.tr} ${'exceeds_maximum_allowed_size'.tr} ${maxSizeInMB.toStringAsFixed(2)} ${'mb'.tr}');
         return false;
       }
 
@@ -319,9 +313,11 @@ class FileValidationHelper {
     }
   }
 
-  static String getMaxFileSize(bool isImage){
+  static String getMaxFileSize(bool isImage) {
     final configModel = Get.find<SplashController>().config;
-    final maxSize = isImage ? configModel?.maxImageUploadSize ?? 20971520 : configModel?.maxFileUploadSize ?? 20971520;
+    final maxSize = isImage
+        ? configModel?.maxImageUploadSize ?? 20971520
+        : configModel?.maxFileUploadSize ?? 20971520;
 
     return '${'file_size'.tr} : ${'max'.tr} ${maxSize / (1024 * 1024)} ${'mb'.tr}';
   }
@@ -368,5 +364,4 @@ class FileValidationHelper {
       return null;
     }
   }
-
 }

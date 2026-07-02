@@ -1,12 +1,14 @@
-
 import 'package:ride_sharing_user_app/localization/language_model.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
 
 class AppConstants {
   static const String appName = 'Zuri Driver';
   static const String baseUrl = 'https://zuriride.com';
-  static const String polylineMapKey = 'AIzaSyC40Q_xELj7koarpfKSvCh1dlrwKdkaw5U';
-  static const double appVersion = 3.1;   /// Flutter SDK 3.41.4
+  static const String polylineMapKey =
+      'AIzaSyC40Q_xELj7koarpfKSvCh1dlrwKdkaw5U';
+  static const double appVersion = 3.2;
+
+  /// Flutter SDK 3.41.4
   static const String configUri = '/api/driver/configuration';
   static const String registration = '/api/driver/auth/registration';
   static const String loginUri = '/api/driver/auth/login';
@@ -19,9 +21,12 @@ class AppConstants {
   static const String onlineOfflineStatus = '/api/driver/update-online-status';
   static const String profileInfo = '/api/driver/info';
   static const String updateProfileInfo = '/api/driver/update/profile';
-  static const String vehicleBrandList = '/api/driver/vehicle/brand/list?offset=';
-  static const String vehicleModelList = '/api/driver/vehicle/models/list?offset=';
-  static const String vehicleMainCategory = '/api/driver/vehicle/category/list?offset=';
+  static const String vehicleBrandList =
+      '/api/driver/vehicle/brand/list?offset=';
+  static const String vehicleModelList =
+      '/api/driver/vehicle/models/list?offset=';
+  static const String vehicleMainCategory =
+      '/api/driver/vehicle/category/list?offset=';
   static const String addNewVehicle = '/api/driver/vehicle/store';
   static const String geoCodeURI = '/api/driver/config/geocode-api';
   static const String getZone = '/api/driver/config/get-zone-id';
@@ -40,76 +45,113 @@ class AppConstants {
   static const String tripList = '/api/driver/ride/list';
   static const String tripOverView = '/api/driver/ride/overview';
   static const String paymentUri = '/api/driver/ride/payment';
-  static const String searchLocationUri = '/api/customer/config/place-api-autocomplete';
+  static const String searchLocationUri =
+      '/api/customer/config/place-api-autocomplete';
   static const String createChannel = '/api/driver/chat/create-channel';
   static const String channelList = '/api/driver/chat/channel-list';
   static const String conversationList = '/api/driver/chat/conversation';
   static const String sendMessage = '/api/driver/chat/send-message';
-  static const String notificationList = '/api/driver/notification-list?limit=10&offset=';
+  static const String notificationList =
+      '/api/driver/notification-list?limit=10&offset=';
   static const String arrivalPickupPoint = '/api/driver/ride/arrival-time';
   static const String waitingUri = '/api/driver/ride/ride-waiting';
-  static const String transactionListUri = '/api/driver/transaction/list?limit=10&offset=';
-  static const String loyaltyPointListUri = '/api/driver/loyalty-points/list?limit=10&offset=';
+  static const String transactionListUri =
+      '/api/driver/transaction/list?limit=10&offset=';
+  static const String loyaltyPointListUri =
+      '/api/driver/loyalty-points/list?limit=10&offset=';
   static const String reviewList = '/api/driver/review/list?limit=10&offset=';
   static const String saveReview = '/api/driver/review/save/';
   static const String pointConvert = '/api/driver/loyalty-points/convert';
   static const String leaderboardUri = '/api/driver/activity/leaderboard?';
-  static const String dynamicWithdrawMethodList = '/api/driver/withdraw/methods?limit=20&offset=1';
+  static const String dynamicWithdrawMethodList =
+      '/api/driver/withdraw/methods?limit=20&offset=1';
   static const String withdrawRequestUri = '/api/driver/withdraw/request';
   static const String dailyActivities = '/api/driver/activity/daily-income';
   static const String trackDriverLog = '/api/driver/time-tracking';
-  static const String updateLastLocationUsingSocket = '/user/live-location?appKey';
+  static const String updateLastLocationUsingSocket =
+      '/user/live-location?appKey';
   static const String storeLastLocationAPI = '/api/user/store-live-location';
-  static const String ignoreNotification = '/api/driver/ride/ignore-trip-notification';
-  static const String arrivedDestination = '/api/driver/ride/coordinate-arrival';
+  static const String ignoreNotification =
+      '/api/driver/ride/ignore-trip-notification';
+  static const String arrivedDestination =
+      '/api/driver/ride/coordinate-arrival';
   static const String findChannelRideStatus = '/api/driver/chat/find-channel';
-  static const String rideCancellationReasonList = '/api/driver/config/cancellation-reason-list';
-  static const String parcelOngoingList = '/api/driver/ride/ongoing-parcel-list?limit=100&offset=1';
-  static const String parcelUnpaidList = '/api/driver/ride/unpaid-parcel-list?limit=100&offset=1';
+  static const String rideCancellationReasonList =
+      '/api/driver/config/cancellation-reason-list';
+  static const String parcelOngoingList =
+      '/api/driver/ride/ongoing-parcel-list?limit=100&offset=1';
+  static const String parcelUnpaidList =
+      '/api/driver/ride/unpaid-parcel-list?limit=100&offset=1';
   static const String changeLanguage = '/api/driver/change-language';
   static const String getProfileLevel = '/api/driver/level';
-  static const String getWithdrawMethodInfoList = '/api/driver/withdraw-method-info/list?limit=10&offset=';
-  static const String withdrawMethodCreate = '/api/driver/withdraw-method-info/create';
-  static const String withdrawMethodUpdate = '/api/driver/withdraw-method-info/update/';
-  static const String incomeStatementUri = '/api/driver/income-statement?limit=10&offset=';
-  static const String payableListUri = '/api/driver/transaction/payable-list?limit=10&offset=';
-  static const String withdrawPendingListUri = '/api/driver/withdraw/pending-request?limit=10&offset=';
-  static const String withdrawSettledListUri = '/api/driver/withdraw/settled-request?limit=10&offset=';
-  static const String cashCollectHistoryList = '/api/driver/transaction/cash-collect-list?limit=10&offset=';
-  static const String walletListUri = '/api/driver/transaction/wallet-list?limit=10&offset=';
-  static const String withdrawMethodDelete = '/api/driver/withdraw-method-info/delete/';
+  static const String getWithdrawMethodInfoList =
+      '/api/driver/withdraw-method-info/list?limit=10&offset=';
+  static const String withdrawMethodCreate =
+      '/api/driver/withdraw-method-info/create';
+  static const String withdrawMethodUpdate =
+      '/api/driver/withdraw-method-info/update/';
+  static const String incomeStatementUri =
+      '/api/driver/income-statement?limit=10&offset=';
+  static const String payableListUri =
+      '/api/driver/transaction/payable-list?limit=10&offset=';
+  static const String withdrawPendingListUri =
+      '/api/driver/withdraw/pending-request?limit=10&offset=';
+  static const String withdrawSettledListUri =
+      '/api/driver/withdraw/settled-request?limit=10&offset=';
+  static const String cashCollectHistoryList =
+      '/api/driver/transaction/cash-collect-list?limit=10&offset=';
+  static const String walletListUri =
+      '/api/driver/transaction/wallet-list?limit=10&offset=';
+  static const String withdrawMethodDelete =
+      '/api/driver/withdraw-method-info/delete/';
   static const String updateVehicle = '/api/driver/vehicle/update/';
   static const String referralDetails = '/api/driver/referral-details';
-  static const String referralEarningList = '/api/driver/transaction/referral-earning-list?limit=10&offset=';
-  static const String parcelCancellationReasonList = '/api/driver/config/parcel-cancellation-reason-list';
+  static const String referralEarningList =
+      '/api/driver/transaction/referral-earning-list?limit=10&offset=';
+  static const String parcelCancellationReasonList =
+      '/api/driver/config/parcel-cancellation-reason-list';
   static const String parcelReturnedOtp = '/api/driver/ride/returned-parcel';
   static const String parcelResendOtp = '/api/driver/ride/resend-otp';
   static const String getZoneList = '/api/driver/zone/list';
-  static const String otpFirebaseVerification = '/api/driver/auth/firebase-otp-verification';
+  static const String otpFirebaseVerification =
+      '/api/driver/auth/firebase-otp-verification';
   static const String checkRegisteredUserUri = '/api/driver/auth/check';
-  static const String createChannelWithAdmin = '/api/driver/chat/create-channel-with-admin';
-  static const String sendMessageToAdmin = '/api/driver/chat/send-message-to-admin';
-  static const String sendFaqMessageToAdmin = '/api/driver/chat/send-predefined-question-to-admin';
-  static const String predefineFawQuestionList = '/api/driver/config/predefined-question-answer-list';
-  static const String getSafetyAlertReasonList = '/api/driver/config/safety-alert-reason-list';
-  static const String getOtherEmergencyNumberList = '/api/driver/config/other-emergency-contact-list';
+  static const String createChannelWithAdmin =
+      '/api/driver/chat/create-channel-with-admin';
+  static const String sendMessageToAdmin =
+      '/api/driver/chat/send-message-to-admin';
+  static const String sendFaqMessageToAdmin =
+      '/api/driver/chat/send-predefined-question-to-admin';
+  static const String predefineFawQuestionList =
+      '/api/driver/config/predefined-question-answer-list';
+  static const String getSafetyAlertReasonList =
+      '/api/driver/config/safety-alert-reason-list';
+  static const String getOtherEmergencyNumberList =
+      '/api/driver/config/other-emergency-contact-list';
   static const String storeSafetyAlert = '/api/driver/safety-alert/store';
   static const String resendSafetyAlert = '/api/driver/safety-alert/resend/';
-  static const String markAsSolvedSafetyAlert = '/api/driver/safety-alert/mark-as-solved/';
+  static const String markAsSolvedSafetyAlert =
+      '/api/driver/safety-alert/mark-as-solved/';
   static const String customerAlertDetails = '/api/driver/safety-alert/show/';
-  static const String getPrecautionList = '/api/driver/config/safety-precaution-list';
+  static const String getPrecautionList =
+      '/api/driver/config/safety-precaution-list';
   static const String undoSafetyAlert = '/api/driver/safety-alert/undo/';
   static const String ongoingRideList = '/api/driver/ride/all-ride-list';
-  static const String outForPickupUri = '/api/driver/ride/update-to-out-for-pickup/';
+  static const String outForPickupUri =
+      '/api/driver/ride/update-to-out-for-pickup/';
   static const String lastRideDetails = '/api/driver/last-ride-details';
   static const String readNotification = '/api/user/read-notification';
-  static const String getPaymentMethods = '/api/driver/config/get-payment-methods';
+  static const String getPaymentMethods =
+      '/api/driver/config/get-payment-methods';
   static const String digitalPayment = '/api/driver/pay-digitally';
   static const String faceVeryUri = '/api/driver/face-verification/verify';
   static const String skipFaceVerify = '/api/driver/face-verification/skip';
   static const String rideTrackingUrl = '/api/track/';
-  static const String registrationFromOtp = '/api/driver/auth/registration-from-otp';
+  static const String registrationFromOtp =
+      '/api/driver/auth/registration-from-otp';
   static const String otpLoginAfterUpdateData = '/api/driver/auth/update-data';
+  static const String checkDriverPasswordForBiometric =
+      '/api/driver/verify-or-set-password-for-biometric';
 
   //Ride Status
 
@@ -133,9 +175,6 @@ class AppConstants {
   static const String sender = 'sender';
   static const String scheduleRequest = 'scheduled_request';
 
-
-
-
   // Shared Key
   static const String theme = 'theme';
   static const String token = 'token';
@@ -153,10 +192,20 @@ class AppConstants {
   static const String topic = 'notify';
   static const String zoneId = 'zoneId';
   static const String lastRefund = 'refund';
+  static const String biometricAuth = 'biometric_auth';
+  static const String biometricPin = 'biometric';
 
   static List<LanguageModel> languages = [
-    LanguageModel(imageUrl: Images.unitedKingdom, languageName: 'English', countryCode: 'US', languageCode: 'en'),
-    LanguageModel(imageUrl: Images.saudi, languageName: 'عربي', countryCode: 'SA', languageCode: 'ar'),
+    LanguageModel(
+        imageUrl: Images.unitedKingdom,
+        languageName: 'English',
+        countryCode: 'US',
+        languageCode: 'en'),
+    LanguageModel(
+        imageUrl: Images.saudi,
+        languageName: 'عربي',
+        countryCode: 'SA',
+        languageCode: 'ar'),
   ];
 
   static const int imageQuality = 80;
@@ -169,6 +218,10 @@ class AppConstants {
     'gif',
     'webp',
   ];
+
+  static const List<String> allowPdfFormat = ['pdf'];
+
+  static const List<String> allowDocFormat = ['doc', 'docx'];
 
   static const List<String> allowedImageExtensionsForFile = [
     'csv',
@@ -193,6 +246,4 @@ class AppConstants {
 
   ///map zoom
   static const double mapZoom = 20;
-
-
 }

@@ -8,19 +8,21 @@ class ParcelListModel {
   String? offset;
   List<TripDetail>? data;
 
-
-  ParcelListModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,});
+  ParcelListModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   ParcelListModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
@@ -29,9 +31,5 @@ class ParcelListModel {
         data!.add(TripDetail.fromJson(v));
       });
     }
-
   }
-
-
 }
-

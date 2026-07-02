@@ -47,6 +47,8 @@
 	<string>This app needs access to location to manage delivery address when add a new address.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app need photo gallery access for taking photo for user profile picture.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app requires Face ID for secure authentication.</string>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<string>This app need location permission for tracking driver start to destination trip.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

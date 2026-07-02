@@ -6,20 +6,21 @@ class NotificationsModel {
   String? offset;
   List<Notifications>? data;
 
-
-  NotificationsModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  NotificationsModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   NotificationsModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
@@ -28,9 +29,7 @@ class NotificationsModel {
         data!.add(Notifications.fromJson(v));
       });
     }
-
   }
-
 }
 
 class Notifications {
@@ -47,19 +46,18 @@ class Notifications {
 
   Notifications(
       {this.id,
-        this.userId,
-        this.rideRequestId,
-        this.title,
-        this.description,
-        this.type,
-        this.action,
-        this.createdAt,
-        this.notificationType,
-        this.isRead
-      });
+      this.userId,
+      this.rideRequestId,
+      this.title,
+      this.description,
+      this.type,
+      this.action,
+      this.createdAt,
+      this.notificationType,
+      this.isRead});
 
   Notifications.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = json['id'] != null ? int.tryParse(json['id'].toString()) : null;
     userId = json['user_id'];
     rideRequestId = json['ride_request_id'];
     title = json['title'];
@@ -67,9 +65,10 @@ class Notifications {
     type = json['type'];
     action = json['action'];
     createdAt = json['created_at'];
-    isRead = json['is_read'];
+    isRead = json['is_read'] != null
+        ? (json['is_read'].toString() == '1' ||
+            json['is_read'].toString() == 'true')
+        : null;
     notificationType = json['notification_type'];
   }
-
-
 }

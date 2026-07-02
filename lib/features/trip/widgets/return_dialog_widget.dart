@@ -37,7 +37,7 @@ class _ReturnDialogWidgetState extends State<ReturnDialogWidget> {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _seconds = _seconds - 1;
-      if(_seconds == 0) {
+      if (_seconds == 0) {
         timer.cancel();
         _timer?.cancel();
       }
@@ -53,131 +53,158 @@ class _ReturnDialogWidgetState extends State<ReturnDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<TripController>(builder: (tripController){
+    return GetBuilder<TripController>(builder: (tripController) {
       return Dialog(
           surfaceTintColor: Theme.of(context).cardColor,
-          insetPadding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.paddingSizeDefault)),
+          insetPadding: const EdgeInsets.symmetric(
+              horizontal: Dimensions.paddingSizeDefault),
+          shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(Dimensions.paddingSizeDefault)),
           child: Container(
-            padding:  const EdgeInsets.all(Dimensions.paddingSizeDefault),
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.center,
+            padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Align(
                   alignment: Alignment.topRight,
-                  child: InkWell(onTap: ()=> Get.back(), child: Container(
-                    decoration: BoxDecoration(color: Theme.of(context).hintColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
-                    child: Image.asset(
-                      Images.crossIcon,
-                      height: Dimensions.paddingSizeSmall,
-                      width: Dimensions.paddingSizeSmall,
-                      color: Theme.of(context).cardColor,
-                    ),
-                  )),
+                  child: InkWell(
+                      onTap: () => Get.back(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .hintColor
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        padding: const EdgeInsets.all(
+                            Dimensions.paddingSizeExtraSmall),
+                        child: Image.asset(
+                          Images.crossIcon,
+                          height: Dimensions.paddingSizeSmall,
+                          width: Dimensions.paddingSizeSmall,
+                          color: Theme.of(context).cardColor,
+                        ),
+                      )),
                 ),
-
-                Text('enter_cancellation_otp'.tr,style: textBold),
-
+                Text('enter_cancellation_otp'.tr, style: textBold),
                 Text('collect_the_otp'.tr),
-
-                Padding(padding:  EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraLarge,horizontal: Get.width * 0.18),
-                  child: PinCodeTextField(
-                    length: 4,
-                    appContext: context,
-                    obscureText: false,
-                    showCursor: true,
-                    keyboardType: TextInputType.number,
-                    animationType: AnimationType.fade,
-                    pinTheme: PinTheme(
-                        shape: PinCodeFieldShape.box,
-                        fieldHeight: 40,
-                        fieldWidth: 40,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      vertical: Dimensions.paddingSizeExtraLarge,
+                      horizontal: Get.width * 0.18),
+                  child: Center(
+                    child: MaterialPinField(
+                      length: 4,
+                      theme: MaterialPinTheme(
+                        cellSize: const Size(40, 40),
                         borderWidth: 1,
-                        borderRadius: BorderRadius.circular(10),
-                        selectedColor: Theme.of(context).primaryColor,
-                        selectedFillColor: Theme.of(context).primaryColor.withValues(alpha: .25),
-                        inactiveFillColor: Theme.of(context).disabledColor.withValues(alpha: .125),
-                        inactiveColor: Theme.of(context).disabledColor.withValues(alpha: .125),
-                        activeColor: Theme.of(context).primaryColor.withValues(alpha: .123),
-                        activeFillColor: Theme.of(context).primaryColor.withValues(alpha: .125)),
-                    animationDuration: const Duration(milliseconds: 300),
-                    backgroundColor: Colors.transparent,
-                    enableActiveFill: true,
-                    onChanged: (value){
-                      otp = value;
-                    },
-                    beforeTextPaste: (text) {
-                      return true;
-                    },
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(Dimensions.radiusDefault)),
+                        cursorColor:
+                            Theme.of(context).textTheme.bodyMedium?.color,
+                        cursorHeight: 20,
+                        animationDuration: const Duration(milliseconds: 300),
+                        borderColor:
+                            Theme.of(context).hintColor.withValues(alpha: 0.2),
+                        filledBorderColor: Theme.of(context)
+                            .primaryColor
+                            .withValues(alpha: 0.5),
+                        fillColor: Theme.of(context).cardColor,
+                        filledFillColor: Theme.of(context).cardColor,
+                        focusedFillColor: Theme.of(context).cardColor,
+                        focusedBorderColor:
+                            Theme.of(context).hintColor.withValues(alpha: 0.2),
+                      ),
+                      autoFocus: true,
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        otp = value;
+                      },
+                    ),
                   ),
                 ),
-
-                tripController.isLoading ?
-                Center(child: SpinKitCircle(color: Theme.of(context).primaryColor, size: 40.0)) :
-                ButtonWidget(
-                  width: Get.width * 0.5,
-                  buttonText: 'submit'.tr,
-                  onPressed: (){
-                     if(otp.trim().isEmpty){
-                       showCustomSnackBar('otp_required'.tr);
-                     }else{
-                       tripController.parcelReturnSubmitOtp(Get.find<RideController>().tripDetail?.id ?? '', otp).then((value){
-                         if(value.statusCode == 200){
-                           Get.back();
-                           showCustomSnackBar('parcel_returned_successfully'.tr);
-                         }
-                       });
-                     }
-                  },
-
-                ),
+                tripController.isLoading
+                    ? Center(
+                        child: SpinKitCircle(
+                            color: Theme.of(context).primaryColor, size: 40.0))
+                    : ButtonWidget(
+                        width: Get.width * 0.5,
+                        buttonText: 'submit'.tr,
+                        onPressed: () {
+                          if (otp.trim().isEmpty) {
+                            showCustomSnackBar('otp_required'.tr);
+                          } else {
+                            tripController
+                                .parcelReturnSubmitOtp(
+                                    Get.find<RideController>().tripDetail?.id ??
+                                        '',
+                                    otp)
+                                .then((value) {
+                              if (value.statusCode == 200) {
+                                Get.back();
+                                showCustomSnackBar(
+                                    'parcel_returned_successfully'.tr);
+                              }
+                            });
+                          }
+                        },
+                      ),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                Text('didnot_receive_code'.tr,style: textBold),
+                Text('didnot_receive_code'.tr, style: textBold),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
-
                 InkWell(
-                    onTap: (){
-                      if(_seconds == 0){
+                    onTap: () {
+                      if (_seconds == 0) {
                         _startTimer();
-                        tripController.resendReturnedOtp(Get.find<RideController>().tripDetail?.id ?? '');
+                        tripController.resendReturnedOtp(
+                            Get.find<RideController>().tripDetail?.id ?? '');
                       }
                     },
-                    child: RichText (
-                      text: TextSpan(text: '${'resend_it'.tr} ', style: textBold.copyWith(color: Theme.of(context).colorScheme.surfaceContainer),
+                    child: RichText(
+                      text: TextSpan(
+                        text: '${'resend_it'.tr} ',
+                        style: textBold.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.surfaceContainer),
                         children: <TextSpan>[
-                          TextSpan(text: _seconds > 0 ?'${'after'.tr} (${_seconds}s)' : '', style: textBold.copyWith()),
+                          TextSpan(
+                              text: _seconds > 0
+                                  ? '${'after'.tr} (${_seconds}s)'
+                                  : '',
+                              style: textBold.copyWith()),
                         ],
                       ),
-                    )
-                ),
+                    )),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                RichText (
-                  text: TextSpan(text: '${'or_contact_with'.tr} ', style: textMedium.copyWith(color: Theme.of(context).colorScheme.secondaryFixedDim),
+                RichText(
+                  text: TextSpan(
+                    text: '${'or_contact_with'.tr} ',
+                    style: textMedium.copyWith(
+                        color: Theme.of(context).colorScheme.secondaryFixedDim),
                     children: <TextSpan>[
                       TextSpan(
-                        text: Get.find<SplashController>().config?.businessName ?? '',
-                        style: textBold.copyWith(decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()..onTap =(){
-                          Get.to(()=> HelpAndSupportScreen());
-                        }
-                      ),
+                          text: Get.find<SplashController>()
+                                  .config
+                                  ?.businessName ??
+                              '',
+                          style: textBold.copyWith(
+                              decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Get.to(() => HelpAndSupportScreen());
+                            }),
                     ],
                   ),
                 ),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
-
               ],
             ),
-          )
-      );
+          ));
     });
   }
 }
-
 
 class ReturnBottomSheetWidget extends StatelessWidget {
   const ReturnBottomSheetWidget({super.key});
@@ -187,22 +214,25 @@ class ReturnBottomSheetWidget extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(Dimensions.paddingSizeDefault),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(Dimensions.paddingSizeLarge), topRight: Radius.circular(Dimensions.paddingSizeLarge)),
-        color: Theme.of(context).cardColor
-      ),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(Dimensions.paddingSizeLarge),
+              topRight: Radius.circular(Dimensions.paddingSizeLarge)),
+          color: Theme.of(context).cardColor),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const SizedBox(),
-
-          Container(width: Dimensions.paddingSizeLarge, height: Dimensions.paddingSizeExtraSmall, color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
-
+          Container(
+              width: Dimensions.paddingSizeLarge,
+              height: Dimensions.paddingSizeExtraSmall,
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
           InkWell(
-            onTap: (){
+            onTap: () {
               Get.back();
-              Get.dialog(const ReturnDialogWidget(),barrierDismissible: false);
+              Get.dialog(const ReturnDialogWidget(), barrierDismissible: false);
             },
             child: Container(
-              decoration: BoxDecoration(color: Theme.of(context).hintColor.withValues(alpha: 0.2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).hintColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
               padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
@@ -216,33 +246,32 @@ class ReturnBottomSheetWidget extends StatelessWidget {
           )
         ]),
         const SizedBox(height: Dimensions.paddingSizeSmall),
-
         Image.asset(Images.returnGifAnimation, height: 120, width: 200),
         const SizedBox(height: Dimensions.paddingSizeLarge),
-
-        Text('collect_money_from_customer'.tr, style: textBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
+        Text('collect_money_from_customer'.tr,
+            style: textBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
         const SizedBox(height: Dimensions.paddingSizeDefault),
-
         Row(mainAxisSize: MainAxisSize.min, children: [
-          Text('${'return_fee'.tr} : ', style: textRegular.copyWith(fontSize: Dimensions.fontSizeLarge)),
-
+          Text('${'return_fee'.tr} : ',
+              style: textRegular.copyWith(fontSize: Dimensions.fontSizeLarge)),
           Text(
-            PriceConverter.convertPrice(context, Get.find<RideController>().tripDetail?.returnFee ?? 0),
-            style: textRobotoRegular.copyWith(fontSize: Dimensions.fontSizeLarge, color: Theme.of(context).primaryColor),
+            PriceConverter.convertPrice(
+                context, Get.find<RideController>().tripDetail?.returnFee ?? 0),
+            style: textRobotoRegular.copyWith(
+                fontSize: Dimensions.fontSizeLarge,
+                color: Theme.of(context).primaryColor),
           )
         ]),
         const SizedBox(height: Dimensions.paddingSizeExtraLarge),
-
         ButtonWidget(
-            onPressed: (){
-              Get.back();
-              Get.dialog(const ReturnDialogWidget(),barrierDismissible: false);
-            },
-            buttonText: 'okay'.tr,
+          onPressed: () {
+            Get.back();
+            Get.dialog(const ReturnDialogWidget(), barrierDismissible: false);
+          },
+          buttonText: 'okay'.tr,
           radius: 50,
         ),
         const SizedBox(height: Dimensions.paddingSizeDefault)
-
       ]),
     );
   }

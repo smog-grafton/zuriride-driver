@@ -6,20 +6,21 @@ class TransactionModel {
   String? offset;
   List<Transaction>? data;
 
-
-  TransactionModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  TransactionModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   TransactionModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
@@ -28,9 +29,7 @@ class TransactionModel {
         data!.add(Transaction.fromJson(v));
       });
     }
-
   }
-
 }
 
 class Transaction {
@@ -43,22 +42,18 @@ class Transaction {
 
   Transaction(
       {this.id,
-        this.attribute,
-        this.attributeId,
-        this.debit,
-        this.credit,
-        this.createdAt});
+      this.attribute,
+      this.attributeId,
+      this.debit,
+      this.credit,
+      this.createdAt});
 
   Transaction.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     attribute = json['account'];
     attributeId = json['attribute_id'];
-    debit = json['debit'].toDouble();
-    credit = json['credit'].toDouble();
+    debit = double.tryParse(json['debit'].toString());
+    credit = double.tryParse(json['credit'].toString());
     createdAt = json['created_at'];
   }
-
-
 }
-
-

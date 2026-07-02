@@ -6,19 +6,21 @@ class VehicleBrandModel {
   String? offset;
   List<Brand>? data;
 
-  VehicleBrandModel(
-      {this.responseCode,
-        this.message,
-        this.totalSize,
-        this.limit,
-        this.offset,
-        this.data,
-        });
+  VehicleBrandModel({
+    this.responseCode,
+    this.message,
+    this.totalSize,
+    this.limit,
+    this.offset,
+    this.data,
+  });
 
   VehicleBrandModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     message = json['message'];
-    totalSize = json['total_size'];
+    totalSize = json['total_size'] != null
+        ? int.tryParse(json['total_size'].toString())
+        : null;
     limit = json['limit'];
     offset = json['offset'];
     if (json['data'] != null) {
@@ -55,19 +57,19 @@ class Brand {
 
   Brand(
       {this.id,
-        this.name,
-        this.description,
-        this.image,
-        this.isActive,
-        this.vehicleModels,
-        this.createdAt});
+      this.name,
+      this.description,
+      this.image,
+      this.isActive,
+      this.vehicleModels,
+      this.createdAt});
 
   Brand.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     description = json['description'];
     image = json['image'];
-    isActive = json['is_active'] ? 1 : 0;
+    isActive = int.tryParse(json['is_active'].toString());
     if (json['vehicle_models'] != null) {
       vehicleModels = <VehicleModels>[];
       json['vehicle_models'].forEach((v) {
@@ -85,8 +87,7 @@ class Brand {
     data['image'] = image;
     data['is_active'] = isActive;
     if (vehicleModels != null) {
-      data['vehicle_models'] =
-          vehicleModels!.map((v) => v.toJson()).toList();
+      data['vehicle_models'] = vehicleModels!.map((v) => v.toJson()).toList();
     }
     data['created_at'] = createdAt;
     return data;
@@ -107,26 +108,32 @@ class VehicleModels {
 
   VehicleModels(
       {this.id,
-        this.name,
-        this.seatCapacity,
-        this.maximumWeight,
-        this.hatchBagCapacity,
-        this.engine,
-        this.description,
-        this.image,
-        this.isActive,
-        this.createdAt});
+      this.name,
+      this.seatCapacity,
+      this.maximumWeight,
+      this.hatchBagCapacity,
+      this.engine,
+      this.description,
+      this.image,
+      this.isActive,
+      this.createdAt});
 
   VehicleModels.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    seatCapacity = json['seat_capacity'];
-    maximumWeight = json['maximum_weight'];
-    hatchBagCapacity = json['hatch_bag_capacity'];
+    seatCapacity = json['seat_capacity'] != null
+        ? int.tryParse(json['seat_capacity'].toString())
+        : null;
+    maximumWeight = json['maximum_weight'] != null
+        ? int.tryParse(json['maximum_weight'].toString())
+        : null;
+    hatchBagCapacity = json['hatch_bag_capacity'] != null
+        ? int.tryParse(json['hatch_bag_capacity'].toString())
+        : null;
     engine = json['engine'];
     description = json['description'];
     image = json['image'];
-    isActive = json['is_active'] ? 1: 0;
+    isActive = int.tryParse(json['is_active'].toString());
     createdAt = json['created_at'];
   }
 

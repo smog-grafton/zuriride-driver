@@ -6,11 +6,13 @@ import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DigitalPaymentScreen extends StatefulWidget {
   final String paymentMethod;
   final String totalAmount;
-  const DigitalPaymentScreen({super.key, required this.paymentMethod, required this.totalAmount});
+  const DigitalPaymentScreen(
+      {super.key, required this.paymentMethod, required this.totalAmount});
 
   @override
   State<DigitalPaymentScreen> createState() => _DigitalPaymentScreenState();
@@ -21,7 +23,6 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
   double value = 0.0;
   final bool _isLoading = true;
 
-
   PullToRefreshController? pullToRefreshController;
   late AddFundInAppBrowser browser;
 
@@ -29,7 +30,8 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
   void initState() {
     super.initState();
 
-    selectedUrl = '${AppConstants.baseUrl}${AppConstants.digitalPayment}?user_id=${Get.find<ProfileController>().profileInfo?.id}&amount=${widget.totalAmount}&payment_method=${widget.paymentMethod}';
+    selectedUrl =
+        '${AppConstants.baseUrl}${AppConstants.digitalPayment}?user_id=${Get.find<ProfileController>().profileInfo?.id}&amount=${widget.totalAmount}&payment_method=${widget.paymentMethod}';
     _initData();
   }
 
@@ -37,11 +39,12 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
     browser = AddFundInAppBrowser(context);
     final settings = InAppBrowserClassSettings(
       browserSettings: InAppBrowserSettings(hideUrlBar: false),
-      webViewSettings: InAppWebViewSettings(javaScriptEnabled: true, isInspectable: kDebugMode, useShouldOverrideUrlLoading: true, useOnLoadResource: true),
+      webViewSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          isInspectable: kDebugMode,
+          useShouldOverrideUrlLoading: true,
+          useOnLoadResource: true),
     );
-
-
-
 
     await browser.openUrlRequest(
       urlRequest: URLRequest(url: WebUri(selectedUrl!)),
@@ -49,30 +52,38 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: PopScope(canPop: false,
+      child: PopScope(
+        canPop: false,
         onPopInvokedWithResult: (didPop, val) async {
           Get.back();
-          return ;
+          return;
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text(''),backgroundColor: Theme.of(context).cardColor),
-          body: Center(child: _isLoading ? SpinKitCircle(color: Theme.of(context).primaryColor, size: 40.0,) : const SizedBox.shrink()),
+          appBar: AppBar(
+              title: const Text(''),
+              backgroundColor: Theme.of(context).cardColor),
+          body: Center(
+              child: _isLoading
+                  ? SpinKitCircle(
+                      color: Theme.of(context).primaryColor,
+                      size: 40.0,
+                    )
+                  : const SizedBox.shrink()),
         ),
       ),
     );
   }
 }
 
-
 class AddFundInAppBrowser extends InAppBrowser {
   final BuildContext context;
 
-  AddFundInAppBrowser(this.context,  {
+  AddFundInAppBrowser(
+    this.context, {
     super.windowId,
     super.initialUserScripts,
   });
@@ -123,10 +134,10 @@ class AddFundInAppBrowser extends InAppBrowser {
 
   @override
   void onExit() {
-    if(_canRedirect) {
+    if (_canRedirect) {
       Get.back();
 
-      Future.delayed(Duration(microseconds: 500)).then((_){
+      Future.delayed(Duration(microseconds: 500)).then((_) {
         showCustomSnackBar('${'transaction_failed'.tr} !');
       });
     }
@@ -136,21 +147,23 @@ class AddFundInAppBrowser extends InAppBrowser {
     }
   }
 
-
-
-
-
   @override
-  Future<NavigationActionPolicy> shouldOverrideUrlLoading(navigationAction) async {
+  Future<NavigationActionPolicy> shouldOverrideUrlLoading(
+      navigationAction) async {
     if (kDebugMode) {
       print("\n\nOverride ${navigationAction.request.url}\n\n");
+    }
+    Uri uri = navigationAction.request.url!;
+    if (!["http", "https", "file", "chrome", "data", "javascript", "about"]
+        .contains(uri.scheme)) {
+      launchUrl(uri, mode: LaunchMode.externalApplication);
+      return NavigationActionPolicy.CANCEL;
     }
     return NavigationActionPolicy.ALLOW;
   }
 
   @override
-  void onLoadResource(resource) {
-  }
+  void onLoadResource(resource) {}
 
   @override
   void onConsoleMessage(consoleMessage) {
@@ -164,30 +177,32 @@ class AddFundInAppBrowser extends InAppBrowser {
   }
 
   void _pageRedirect(String url) {
-    if(_canRedirect) {
-      bool isSuccess = url.contains('success') && url.contains(AppConstants.baseUrl);
-      bool isFailed = url.contains('fail') && url.contains(AppConstants.baseUrl);
-      bool isCancel = url.contains('cancel') && url.contains(AppConstants.baseUrl);
-      if(isSuccess || isFailed || isCancel) {
+    if (_canRedirect) {
+      bool isSuccess =
+          url.contains('success') && url.contains(AppConstants.baseUrl);
+      bool isFailed =
+          url.contains('fail') && url.contains(AppConstants.baseUrl);
+      bool isCancel =
+          url.contains('cancel') && url.contains(AppConstants.baseUrl);
+      if (isSuccess || isFailed || isCancel) {
         _canRedirect = false;
         close();
       }
-      if(isSuccess){
+      if (isSuccess) {
         Get.back();
-        showCustomSnackBar('${'amount_paid_successfully'.tr} !', isError: false);
+        showCustomSnackBar('${'amount_paid_successfully'.tr} !',
+            isError: false);
         Get.find<ProfileController>().getProfileInfo();
-      }else if(isFailed) {
+      } else if (isFailed) {
         Get.back();
-        Future.delayed(Duration(microseconds: 500)).then((_){
+        Future.delayed(Duration(microseconds: 500)).then((_) {
           showCustomSnackBar('${'transaction_failed'.tr} !');
         });
-
-      }else if(isCancel) {
+      } else if (isCancel) {
         Get.back();
-        Future.delayed(Duration(microseconds: 500)).then((_){
+        Future.delayed(Duration(microseconds: 500)).then((_) {
           showCustomSnackBar('${'transaction_failed'.tr} !');
         });
-
       }
     }
   }
