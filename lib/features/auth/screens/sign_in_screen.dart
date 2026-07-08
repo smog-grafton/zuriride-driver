@@ -66,6 +66,12 @@ class _SignInScreenState extends State<SignInScreen> {
         top: false,
         child: Scaffold(
           body: GetBuilder<AuthController>(builder: (authController) {
+            final loginOptions =
+                Get.find<SplashController>().config?.driverLoginOptions;
+            final bool isOtpLogin = loginOptions?.otpLogin ?? false;
+            final bool isGoogleLogin = loginOptions?.googleLogin ?? false;
+            final bool isBiometricLogin = loginOptions?.biometricLogin ?? false;
+
             return GetBuilder<ProfileController>(builder: (profileController) {
               return GetBuilder<RideController>(builder: (rideController) {
                 return GetBuilder<LocationController>(
@@ -228,11 +234,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                     },
                                     radius: 50,
                                   ),
-                            if (Get.find<SplashController>()
-                                    .config
-                                    ?.driverLoginOptions
-                                    ?.otpLogin ??
-                                false) ...[
+                            if (isOtpLogin || isGoogleLogin) ...[
                               Center(
                                   child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -244,22 +246,35 @@ class _SignInScreenState extends State<SignInScreen> {
                                       color: Theme.of(context).hintColor),
                                 ),
                               )),
+                            ],
+                            if (isGoogleLogin) ...[
                               ButtonWidget(
                                 showBorder: true,
                                 borderWidth: 1,
                                 transparent: true,
-                                buttonText: 'login_with_otp'.tr,
+                                assetIcon: Images.google,
+                                buttonText: 'login_with_google'.tr,
+                                onPressed: authController.googleLogin,
+                                radius: 50,
+                              ),
+                              if (isOtpLogin)
+                                const SizedBox(
+                                    height: Dimensions.paddingSizeSmall),
+                            ],
+                            if (isOtpLogin) ...[
+                              ButtonWidget(
+                                showBorder: true,
+                                borderWidth: 1,
+                                transparent: true,
+                                assetIcon: Images.phone,
+                                buttonText: 'use_phone_number'.tr,
                                 onPressed: () => Get.to(() =>
                                     const OtpLoginScreen(fromSignIn: true)),
                                 radius: 50,
                               )
                             ],
                             if (authController.isBiometricEnable &&
-                                (Get.find<SplashController>()
-                                        .config
-                                        ?.driverLoginOptions
-                                        ?.biometricLogin ??
-                                    false)) ...[
+                                isBiometricLogin) ...[
                               const SizedBox(
                                   height: Dimensions.paddingSizeSmall),
                               ButtonWidget(

@@ -72,6 +72,7 @@ class WalletController extends GetxController implements GetxService {
   List<int> walletTypeIndexList = [];
   List<PaymentGateways>? paymentGateways = [];
   int paymentGatewayIndex = -1;
+  String? latestIotecPaymentId;
 
   void setSelectedHistoryIndex(int index, bool notify) {
     selectedHistoryIndex = index;
@@ -237,6 +238,64 @@ class WalletController extends GetxController implements GetxService {
       ApiChecker.checkApi(response);
     }
     update();
+  }
+
+  String? latestIotecStatus;
+
+  Future<Response?> depositViaIotec(String amount, String phone) async {
+    isLoading = true;
+    update();
+    Response? response = await walletServiceInterface.depositViaIotec(amount, phone);
+    if (response?.statusCode == 200) {
+      latestIotecPaymentId = response?.body['data']?['payment_id'];
+      final bool isPaid = response?.body['data']?['is_paid'] == true;
+      latestIotecStatus = isPaid ? 'confirmed' : 'pending';
+      if (isPaid) {
+        await Get.find<ProfileController>().getProfileInfo();
+        showCustomSnackBar('amount_paid_successfully'.tr, isError: false);
+      } else {
+        showCustomSnackBar('payment_request_sent'.tr, isError: false);
+      }
+    } else {
+      latestIotecStatus = 'failed';
+      if (response != null) {
+        ApiChecker.checkApi(response);
+      }
+    }
+    isLoading = false;
+    update();
+    return response;
+  }
+
+  Future<Response?> checkIotecPaymentStatus() async {
+    if (latestIotecPaymentId == null) {
+      return null;
+    }
+    isLoading = true;
+    update();
+    Response? response = await walletServiceInterface.getIotecPaymentStatus(latestIotecPaymentId!);
+    if (response?.statusCode == 200) {
+      final bool isPaid = response?.body['data']?['is_paid'] == true;
+      final String providerStatus =
+          (response?.body['data']?['status'] ?? '').toString().toLowerCase();
+      if (isPaid) {
+        latestIotecStatus = 'confirmed';
+        await Get.find<ProfileController>().getProfileInfo();
+        showCustomSnackBar('amount_paid_successfully'.tr, isError: false);
+      } else if (['failed', 'cancelled', 'rejected', 'rolledback']
+          .contains(providerStatus)) {
+        latestIotecStatus = 'failed';
+        showCustomSnackBar('payment_failed_please_try_again'.tr);
+      } else {
+        latestIotecStatus = 'pending';
+        showCustomSnackBar('payment_is_pending'.tr);
+      }
+    } else if (response != null) {
+      ApiChecker.checkApi(response);
+    }
+    isLoading = false;
+    update();
+    return response;
   }
 
   Future<Response?> updateBalance(String balance, String note) async {

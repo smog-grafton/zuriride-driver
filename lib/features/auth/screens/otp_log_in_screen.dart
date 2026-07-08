@@ -129,7 +129,16 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
                                         number: phone)
                                     .then((value) {
                                   if (value.statusCode == 200) {
-                                    if (Get.find<SplashController>()
+                                    if (!(Get.find<SplashController>()
+                                            .config
+                                            ?.verification ??
+                                        true)) {
+                                      authController.directPhoneLogin(
+                                        countryCode:
+                                            authController.countryDialCode,
+                                        number: phone,
+                                      );
+                                    } else if (Get.find<SplashController>()
                                             .config
                                             ?.isFirebaseOtpVerification ??
                                         false) {

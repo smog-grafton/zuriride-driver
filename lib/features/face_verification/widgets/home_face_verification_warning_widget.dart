@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/features/face_verification/controllers/face_verification_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/features/profile/screens/profile_screen.dart';
 import 'package:ride_sharing_user_app/helper/extension_helper.dart';
 import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/images.dart';
@@ -61,7 +62,25 @@ class HomeFaceVerificationWarningWidget extends StatelessWidget {
                   decoration: TextDecoration.underline,
                 )),
               ],
-            ))
+            )),
+
+          if(Get.find<ProfileController>().profileInfo?.suspendReason == 'document_request')
+          RichText(text: TextSpan(
+              text: '${'your_account_is_locked_for_document_request'.tr} ',
+              style: textRegular.copyWith(fontSize: Dimensions.fontSizeSmall,color: Theme.of(context).textTheme.bodyMedium!.color),
+              children: [
+                TextSpan(
+                    recognizer: TapGestureRecognizer()..onTap = (){
+                      Get.find<ProfileController>().setProfileTypeIndex(0, isUpdate: true);
+                      Get.to(() => const ProfileScreen());
+                    },
+                    text: 'submit_document'.tr, style: textRegular.copyWith(
+                  fontSize: Dimensions.fontSizeSmall,
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  decoration: TextDecoration.underline,
+                )),
+              ],
+            )),
 
         ]),
       ),

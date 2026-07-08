@@ -21,4 +21,6 @@ abstract class WalletRepositoryInterface implements RepositoryInterface{
   Future<Response> getCashCollectHistoryList(int offset);
   Future<Response> getWithdrawSettledList(int offset);
   Future<dynamic> getPaymentGetWayList();
+  Future<Response?> depositViaIotec(String amount, String phone);
+  Future<Response?> getIotecPaymentStatus(String paymentId);
 }

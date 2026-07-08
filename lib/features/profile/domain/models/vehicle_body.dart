@@ -1,6 +1,8 @@
 class VehicleBody {
   String? brandId;
+  String? brandName;
   String? modelId;
+  String? modelName;
   String? categoryId;
   String? licencePlateNumber;
   String? licenceExpireDate;
@@ -13,7 +15,9 @@ class VehicleBody {
 
   VehicleBody(
       {this.brandId,
+        this.brandName,
         this.modelId,
+        this.modelName,
         this.categoryId,
         this.licencePlateNumber,
         this.licenceExpireDate,
@@ -27,7 +31,9 @@ class VehicleBody {
 
   VehicleBody.fromJson(Map<String, dynamic> json) {
     brandId = json['brand_id'];
+    brandName = json['brand_name'];
     modelId = json['model_id'];
+    modelName = json['model_name'];
     categoryId = json['category_id'];
     licencePlateNumber = json['licence_plate_number'];
     licenceExpireDate = json['licence_expire_date'];
@@ -41,8 +47,18 @@ class VehicleBody {
 
   Map<String, String> toJson() {
     final Map<String, String> data = <String, String>{};
-    data['brand_id'] = brandId!;
-    data['model_id'] = modelId!;
+    if (brandId?.isNotEmpty ?? false) {
+      data['brand_id'] = brandId!;
+    }
+    if (brandName?.isNotEmpty ?? false) {
+      data['brand_name'] = brandName!;
+    }
+    if (modelId?.isNotEmpty ?? false) {
+      data['model_id'] = modelId!;
+    }
+    if (modelName?.isNotEmpty ?? false) {
+      data['model_name'] = modelName!;
+    }
     data['category_id'] = categoryId!;
     data['licence_plate_number'] = licencePlateNumber!;
     data['licence_expire_date'] = licenceExpireDate!;

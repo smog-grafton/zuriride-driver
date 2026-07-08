@@ -1,6 +1,6 @@
 name: ride_sharing_user_app
 description: A ride sharing Flutter project.
-version: 3.2.0+3200
+version: 3.2.5+3205
 publish_to: 'none'
 
 environment:
@@ -79,6 +79,7 @@ dependencies:
   local_auth: ^3.0.0
   app_settings: ^7.0.0
   flutter_secure_storage: ^10.0.0
+  google_sign_in: ^7.2.0
 
 dependency_overrides:
   open_file_plus:

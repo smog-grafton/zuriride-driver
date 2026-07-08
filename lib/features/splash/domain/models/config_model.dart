@@ -45,8 +45,8 @@ class ConfigModel {
   String? parcelReturnTimeType;
   double? parcelReturnFeeTimeExceed;
   bool? parcelReturnTimeFeeStatus;
-  double? androidAppMinimumVersion;
-  double? iosAppMinimumVersion;
+  String? androidAppMinimumVersion;
+  String? iosAppMinimumVersion;
   String? androidAppUrl;
   String? iosAppUrl;
   bool? isFirebaseOtpVerification;
@@ -78,8 +78,10 @@ class ConfigModel {
   int? frequencyWithinTimePeriod;
   int? tripsRequiredBeforeTriggeringVerification;
   CustomerLoginOptions? driverLoginOptions;
+  bool? driverFloatingOverlayEnabled;
   bool? isRealTimeLocationShareEnable;
   bool? isParcelProofOn;
+  int? tripRequestActiveTime;
   List<AdditionalFieldModel>? additionalFieldList;
 
   ConfigModel(
@@ -160,6 +162,7 @@ class ConfigModel {
       this.tripsRequiredBeforeTriggeringVerification,
       this.verifyDriverIdentity,
       this.driverLoginOptions,
+      this.driverFloatingOverlayEnabled,
       this.isRealTimeLocationShareEnable,
       this.isParcelProofOn,
       this.additionalFieldList});
@@ -267,9 +270,9 @@ class ConfigModel {
             json['referral_earning_status'].toString() == 'true')
         : null;
     androidAppMinimumVersion =
-        json['app_minimum_version_for_android'].toDouble();
+        json['app_minimum_version_for_android']?.toString();
     androidAppUrl = json['app_url_for_android'];
-    iosAppMinimumVersion = json['app_minimum_version_for_ios'].toDouble();
+    iosAppMinimumVersion = json['app_minimum_version_for_ios']?.toString();
     iosAppUrl = json['app_url_for_ios'];
     isFirebaseOtpVerification = json['firebase_otp_verification'] != null
         ? (json['firebase_otp_verification'].toString() == '1' ||
@@ -379,6 +382,11 @@ class ConfigModel {
     driverLoginOptions = json['driver_login_options'] != null
         ? CustomerLoginOptions.fromJson(json['driver_login_options'])
         : null;
+    driverFloatingOverlayEnabled =
+        json['driver_floating_overlay_enabled'] != null
+            ? (json['driver_floating_overlay_enabled'].toString() == '1' ||
+                json['driver_floating_overlay_enabled'].toString() == 'true')
+            : false;
     isRealTimeLocationShareEnable =
         json['is_real_time_location_sharing_enabled'] != null
             ? (json['is_real_time_location_sharing_enabled'].toString() ==
@@ -390,6 +398,8 @@ class ConfigModel {
         ? (json['enable_parcel_delivery_proof'].toString() == '1' ||
             json['enable_parcel_delivery_proof'].toString() == 'true')
         : null;
+    tripRequestActiveTime =
+        int.tryParse(json['trip_request_active_time'].toString()) ?? 10;
     if (json['driver_additional_registration_form_fields'] != null) {
       additionalFieldList = <AdditionalFieldModel>[];
       json['driver_additional_registration_form_fields'].forEach((v) {
@@ -406,6 +416,7 @@ class ImageBaseUrl {
   String? vehicleCategory;
   String? vehicleModel;
   String? vehicleBrand;
+  String? vehiclePhoto;
   String? profileImage;
   String? identityImage;
   String? documents;
@@ -421,6 +432,7 @@ class ImageBaseUrl {
       this.vehicleCategory,
       this.vehicleModel,
       this.vehicleBrand,
+      this.vehiclePhoto,
       this.profileImage,
       this.identityImage,
       this.documents,
@@ -438,6 +450,7 @@ class ImageBaseUrl {
     vehicleCategory = json['vehicle_category'];
     vehicleModel = json['vehicle_model'];
     vehicleBrand = json['vehicle_brand'];
+    vehiclePhoto = json['vehicle_photo'];
     profileImage = json['profile_image'];
     identityImage = json['identity_image'];
     documents = json['documents'];
@@ -455,6 +468,7 @@ class ImageBaseUrl {
     data['vehicle_category'] = vehicleCategory;
     data['vehicle_model'] = vehicleModel;
     data['vehicle_brand'] = vehicleBrand;
+    data['vehicle_photo'] = vehiclePhoto;
     data['profile_image'] = profileImage;
     data['identity_image'] = identityImage;
     data['documents'] = documents;
@@ -588,9 +602,11 @@ class MaintenanceTypeAndDuration {
 class CustomerLoginOptions {
   bool? manualLogin;
   bool? otpLogin;
+  bool? googleLogin;
   bool? biometricLogin;
 
-  CustomerLoginOptions({this.manualLogin, this.otpLogin, this.biometricLogin});
+  CustomerLoginOptions(
+      {this.manualLogin, this.otpLogin, this.googleLogin, this.biometricLogin});
 
   CustomerLoginOptions.fromJson(Map<String, dynamic> json) {
     manualLogin = json['manual_login'] != null
@@ -600,6 +616,10 @@ class CustomerLoginOptions {
     otpLogin = json['otp_login'] != null
         ? (json['otp_login'].toString() == '1' ||
             json['otp_login'].toString() == 'true')
+        : false;
+    googleLogin = json['google_login'] != null
+        ? (json['google_login'].toString() == '1' ||
+            json['google_login'].toString() == 'true')
         : false;
     biometricLogin = json['biometric_login'] != null
         ? (json['biometric_login'].toString() == '1' ||

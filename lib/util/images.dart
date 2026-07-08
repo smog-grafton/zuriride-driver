@@ -301,6 +301,8 @@ class Images {
   static const String referAndEarnGraphics =
       'assets/svg/refer_and_earn_graphics.svg';
   static const String otpLoginGraphics = 'assets/svg/otp_login_graphics.svg';
+  static const String google = 'assets/svg/google.svg';
+  static const String phone = 'assets/svg/phone.svg';
   static const String verificationGraphics =
       'assets/svg/verification_graphics.svg';
   static const String forgetPasswordGraphics =

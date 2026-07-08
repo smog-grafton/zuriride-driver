@@ -34,17 +34,26 @@ Future<void> main() async {
   );
 
   WidgetsFlutterBinding.ensureInitialized();
-  if(GetPlatform.isAndroid) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyBVvg_bfE6R3mi_xFe4m3nNUJAgBDbqNHI",
-        appId: "1:924616565334:android:281bdd0e0620ece8e011f7",
-        messagingSenderId: "924616565334",
-        projectId: "zuriride-beaed",
-      ),
-    );
-  } else {
-    await Firebase.initializeApp();
+  // On Android google-services.json makes native Firebase auto-create the
+  // [DEFAULT] app before Dart runs; initializing it again throws
+  // [core/duplicate-app] and leaves the app stuck on the splash screen.
+  try {
+    if(GetPlatform.isAndroid) {
+      await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: "AIzaSyCkkoPNeQOmGWcxFlzCOiLR583sg2k5_dA",
+          appId: "1:336045871661:android:a61de0c48d95e8a9539ea4",
+          messagingSenderId: "336045871661",
+          projectId: "zuriride-opp-63ad0",
+        ),
+      );
+    } else {
+      await Firebase.initializeApp();
+    }
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      rethrow;
+    }
   }
 
   cameras = await availableCameras();

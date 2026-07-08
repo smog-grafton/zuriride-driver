@@ -27,6 +27,28 @@ class AuthRepository implements AuthRepositoryInterface {
   }
 
   @override
+  Future<Response?> socialLogin({
+    required String token,
+    required String uniqueId,
+    required String email,
+    required String medium,
+  }) async {
+    return await apiClient.postData(AppConstants.socialLogin, {
+      "token": token,
+      "unique_id": uniqueId,
+      "email": email,
+      "medium": medium,
+    });
+  }
+
+  @override
+  Future<Response?> directLogin({required String phone}) async {
+    return await apiClient.postData(AppConstants.directLogin, {
+      "phone_or_email": phone,
+    });
+  }
+
+  @override
   Future<Response?> logOut() async {
     return await apiClient.postData(AppConstants.logout, {});
   }

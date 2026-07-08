@@ -87,4 +87,14 @@ class WalletService implements WalletServiceInterface{
     return await walletRepositoryInterface.getPaymentGetWayList();
   }
 
+  @override
+  Future depositViaIotec(String amount, String phone) {
+    return walletRepositoryInterface.depositViaIotec(amount, phone);
+  }
+
+  @override
+  Future getIotecPaymentStatus(String paymentId) {
+    return walletRepositoryInterface.getIotecPaymentStatus(paymentId);
+  }
+
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ride_sharing_user_app/features/chat/controllers/chat_controller.dart';
 import 'package:ride_sharing_user_app/features/chat/screens/message_screen.dart';
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
@@ -40,10 +42,20 @@ import 'package:ride_sharing_user_app/features/trip/screens/payment_received_scr
 import 'package:ride_sharing_user_app/features/trip/screens/review_this_customer_screen.dart';
 
 class NotificationHelper {
-  static Future<void> initialize(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
-    AndroidInitializationSettings androidInitialize = const AndroidInitializationSettings('notification_icon');
+  static const String _androidChannelId = 'hexaride';
+  static const String _androidChannelName = 'hexaride';
+  static const String _androidRequestChannelId = 'hexaride_requests';
+  static const String _androidRequestChannelName = 'Trip request alerts';
+  static const RawResourceAndroidNotificationSound _androidNotificationSound =
+      RawResourceAndroidNotificationSound('notification');
+
+  static Future<void> initialize(
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+    AndroidInitializationSettings androidInitialize =
+        const AndroidInitializationSettings('notification_icon');
     var iOSInitialize = const DarwinInitializationSettings();
-    var initializationsSettings = InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
+    var initializationsSettings =
+        InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
     flutterLocalNotificationsPlugin.initialize(
       settings: initializationsSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
@@ -64,125 +76,132 @@ class NotificationHelper {
         }
         return;
       },
-
       onDidReceiveBackgroundNotificationResponse: myBackgroundMessageReceiver,
     );
 
+    await _createAndroidNotificationChannel(flutterLocalNotificationsPlugin);
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      AndroidInitializationSettings androidInitialize = const AndroidInitializationSettings('notification_icon');
+      AndroidInitializationSettings androidInitialize =
+          const AndroidInitializationSettings('notification_icon');
       var iOSInitialize = const DarwinInitializationSettings();
-      var initializationsSettings = InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
+      var initializationsSettings = InitializationSettings(
+          android: androidInitialize, iOS: iOSInitialize);
       flutterLocalNotificationsPlugin.initialize(
         settings: initializationsSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        onDidReceiveNotificationResponse:
+            (NotificationResponse response) async {
           notificationToRoute(message.data);
           return;
         },
-
         onDidReceiveBackgroundNotificationResponse: myBackgroundMessageReceiver,
-
       );
 
       /// Show log for debug
-      if(kDebugMode){
+      if (kDebugMode) {
         print('onMessage: ${message.data}');
       }
 
-
       /// check maintenance mode
-      if(!(Get.find<SplashController>().config!.maintenanceMode != null &&
-          Get.find<SplashController>().config!.maintenanceMode!.maintenanceStatus == 1 &&
-          Get.find<SplashController>().config!.maintenanceMode!.selectedMaintenanceSystem!.driverApp == 1) || Get.find<SplashController>().haveOngoingRides()){
-
+      if (!(Get.find<SplashController>().config!.maintenanceMode != null &&
+              Get.find<SplashController>()
+                      .config!
+                      .maintenanceMode!
+                      .maintenanceStatus ==
+                  1 &&
+              Get.find<SplashController>()
+                      .config!
+                      .maintenanceMode!
+                      .selectedMaintenanceSystem!
+                      .driverApp ==
+                  1) ||
+          Get.find<SplashController>().haveOngoingRides()) {
         ///Check webSocket connection
-        if (Get.find<SplashController>().pusherConnectionStatus == null || Get.find<SplashController>().pusherConnectionStatus == 'Disconnected') {
-          if (message.data['action'] == "new_ride_request" || message.data['action'] == "new_parcel_request") {
+        if (Get.find<SplashController>().pusherConnectionStatus == null ||
+            Get.find<SplashController>().pusherConnectionStatus ==
+                'Disconnected') {
+          if (message.data['action'] == "new_ride_request" ||
+              message.data['action'] == "new_parcel_request") {
             _whenNewRequestFound(message);
-
-          } else if(message.data['action'] == "new_message"){
+          } else if (message.data['action'] == "new_message") {
             Get.find<ChatController>().getConversation(message.data['type'], 1);
-
           } else if (message.data['action'] == "trip_completed") {
-           _whenRideComplete(message);
-
+            _whenRideComplete(message);
           } else if (message.data['action'] == "bid_accepted") {
             ///Bid Ride Accepted in this case....
             _whenCustomerBidAccept(message);
-
-          } else if (message.data['action'] == "coupon_removed" || message.data['action'] == "coupon_applied") {
-            Get.find<RideController>().getFinalFare(message.data['ride_request_id']);
-
-          } else if (message.data['action'] == "payment_successful" && message.data['type'] == "ride_request") {
+          } else if (message.data['action'] == "coupon_removed" ||
+              message.data['action'] == "coupon_applied") {
+            Get.find<RideController>()
+                .getFinalFare(message.data['ride_request_id']);
+          } else if (message.data['action'] == "payment_successful" &&
+              message.data['type'] == "ride_request") {
             _whenRidePaymentSuccess(message);
-
-          } else if (message.data['action'] == "payment_successful" && message.data['type'] == "parcel") {
-            Get.find<RideController>().getRideDetails(message.data['ride_request_id']).then((value) {
+          } else if (message.data['action'] == "payment_successful" &&
+              message.data['type'] == "parcel") {
+            Get.find<RideController>()
+                .getRideDetails(message.data['ride_request_id'])
+                .then((value) {
               if (value.statusCode == 200) {
                 Get.find<RideController>().getOngoingParcelList();
-                Get.offAll(()=> ParcelListScreen(title: 'ongoing_parcel_list'.tr));
-
+                Get.offAll(
+                    () => ParcelListScreen(title: 'ongoing_parcel_list'.tr));
               }
             });
-
-          } else if (message.data['action'] == "customer_canceled_trip" || message.data['action'] == "another_driver_assigned") {
+          } else if (message.data['action'] == "customer_canceled_trip" ||
+              message.data['action'] == "another_driver_assigned") {
             _whenCustomerCancelTrip(message);
-
           } else if (checkContainsAction(message.data['action'])) {
             Get.find<ProfileController>().getProfileInfo().then((value) {
               if (value.statusCode == 200) {
-                Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
+                Get.find<RiderMapController>()
+                    .setRideCurrentState(RideState.initial);
                 Get.offAll(() => const DashboardScreen());
               }
             });
-
-          }else if(message.data['action'] == "customer_rejected_bid"){
-            if((Get.find<RideController>().ongoingTrip ?? []).isEmpty){
+          } else if (message.data['action'] == "customer_rejected_bid") {
+            if ((Get.find<RideController>().ongoingTrip ?? []).isEmpty) {
               Get.offAll(() => const DashboardScreen());
-            }else{
-              if(Get.currentRoute == '/RideRequestScreen'){
+            } else {
+              if (Get.currentRoute == '/RideRequestScreen') {
                 Get.back();
               }
             }
-
-          }else if(message.data['action'] == 'identity_image_approved' || message.data['action'] == 'identity_image_rejected'){
+          } else if (message.data['action'] == 'identity_image_approved' ||
+              message.data['action'] == 'identity_image_rejected') {
             Get.find<ProfileController>().getProfileInfo();
-
-          }else if(message.data['action'] == 'level_up'){
+          } else if (message.data['action'] == 'level_up') {
             _whenDriverLevelUp(message);
-
-          }else if(message.data['action'] == "withdraw_request_rejected" || message.data['action'] == "withdraw_request_approved"){
+          } else if (message.data['action'] == "withdraw_request_rejected" ||
+              message.data['action'] == "withdraw_request_approved") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getWithdrawPendingList(1);
-
-          }else if(message.data['action'] == "withdraw_request_settled"){
+          } else if (message.data['action'] == "withdraw_request_settled") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getWithdrawSettledList(1);
-
-          }else if(message.data['action'] == "admin_collected_cash"){
+          } else if (message.data['action'] == "admin_collected_cash") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getPayableHistoryList(1);
-
-          }else if(message.data['action'] == 'parcel_returned'){
-            if(Get.isDialogOpen ?? false){
+          } else if (message.data['action'] == 'parcel_returned') {
+            if (Get.isDialogOpen ?? false) {
               Get.back();
             }
             Get.find<RideController>().getOngoingParcelList();
-            Get.find<RideController>().getRideDetails(message.data['ride_request_id']);
+            Get.find<RideController>()
+                .getRideDetails(message.data['ride_request_id']);
             Get.bottomSheet(ReceiptConfirmationBottomsheet());
-
-          }else if(message.data['action'] == 'parcel_canceled' || message.data['action'] == 'trip_canceled'){
+          } else if (message.data['action'] == 'parcel_canceled' ||
+              message.data['action'] == 'trip_canceled') {
             Get.offAll(const DashboardScreen());
-
-          }else if(message.data['action'] == 'referral_reward_received'){
+          } else if (message.data['action'] == 'referral_reward_received') {
             Get.find<ReferAndEarnController>().getEarningHistoryList(1);
             Get.find<ProfileController>().getProfileInfo();
-
-          }else if(message.data['action'] == 'admin_message'){
-            Get.find<HelpAndSupportController>().getConversation(message.data['type'], 1);
-
-          }else if(message.data['action'] == 'safety_problem_resolved'){
-            Get.find<SafetyAlertController>().getSafetyAlertDetails(message.data['ride_request_id']);
-
+          } else if (message.data['action'] == 'admin_message') {
+            Get.find<HelpAndSupportController>()
+                .getConversation(message.data['type'], 1);
+          } else if (message.data['action'] == 'safety_problem_resolved') {
+            Get.find<SafetyAlertController>()
+                .getSafetyAlertDetails(message.data['ride_request_id']);
           }
 
           ///If web socket Not connected
@@ -190,146 +209,313 @@ class NotificationHelper {
           if (message.data['action'] == "bid_accepted") {
             ///Bid Ride Accepted in this case....
             _whenCustomerBidAccept(message);
-
           } else if (checkContainsAction(message.data['action'])) {
             Get.find<ProfileController>().getProfileInfo().then((value) {
               if (value.statusCode == 200) {
-                Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
+                Get.find<RiderMapController>()
+                    .setRideCurrentState(RideState.initial);
                 Get.offAll(() => const DashboardScreen());
               }
             });
-
-          }else if(message.data['action'] == "customer_rejected_bid"){
-            if((Get.find<RideController>().ongoingTrip ?? []).isEmpty){
+          } else if (message.data['action'] == "customer_rejected_bid") {
+            if ((Get.find<RideController>().ongoingTrip ?? []).isEmpty) {
               Get.offAll(() => const DashboardScreen());
-            }else{
-              if(Get.currentRoute == '/RideRequestScreen'){
+            } else {
+              if (Get.currentRoute == '/RideRequestScreen') {
                 Get.back();
               }
             }
-
-          }else if(message.data['action'] == 'identity_image_approved' || message.data['action'] == 'identity_image_rejected'){
+          } else if (message.data['action'] == 'identity_image_approved' ||
+              message.data['action'] == 'identity_image_rejected') {
             Get.find<ProfileController>().getProfileInfo();
-
-          }else if(message.data['action'] == 'level_up'){
+          } else if (message.data['action'] == 'level_up') {
             _whenDriverLevelUp(message);
-
-          }else if(message.data['action'] == "withdraw_request_rejected" || message.data['action'] == "withdraw_request_approved"){
+          } else if (message.data['action'] == "withdraw_request_rejected" ||
+              message.data['action'] == "withdraw_request_approved") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getWithdrawPendingList(1);
-
-          }else if(message.data['action'] == "withdraw_request_settled"){
+          } else if (message.data['action'] == "withdraw_request_settled") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getWithdrawSettledList(1);
-
-          }else if(message.data['action'] == "admin_collected_cash"){
+          } else if (message.data['action'] == "admin_collected_cash") {
             Get.find<ProfileController>().getProfileInfo();
             Get.find<WalletController>().getPayableHistoryList(1);
-
-          }else if(message.data['action'] == 'parcel_returned'){
-            if(Get.isDialogOpen ?? false){
+          } else if (message.data['action'] == 'parcel_returned') {
+            if (Get.isDialogOpen ?? false) {
               Get.back();
             }
             Get.find<RideController>().getOngoingParcelList();
-            Get.find<RideController>().getRideDetails(message.data['ride_request_id']);
+            Get.find<RideController>()
+                .getRideDetails(message.data['ride_request_id']);
             Get.bottomSheet(ReceiptConfirmationBottomsheet());
-
-          }else if(message.data['action'] == 'parcel_canceled' || message.data['action'] == 'trip_canceled'){
+          } else if (message.data['action'] == 'parcel_canceled' ||
+              message.data['action'] == 'trip_canceled') {
             Get.offAll(const DashboardScreen());
-
-          }else if(message.data['action'] == 'referral_reward_received'){
+          } else if (message.data['action'] == 'referral_reward_received') {
             Get.find<ReferAndEarnController>().getEarningHistoryList(1);
             Get.find<ProfileController>().getProfileInfo();
-
-          }else if(message.data['action'] == 'admin_message'){
-            Get.find<HelpAndSupportController>().getConversation(message.data['type'], 1);
-
-          }else if(message.data['action'] == 'safety_problem_resolved'){
-            Get.find<SafetyAlertController>().getSafetyAlertDetails(message.data['ride_request_id']);
-
+          } else if (message.data['action'] == 'admin_message') {
+            Get.find<HelpAndSupportController>()
+                .getConversation(message.data['type'], 1);
+          } else if (message.data['action'] == 'safety_problem_resolved') {
+            Get.find<SafetyAlertController>()
+                .getSafetyAlertDetails(message.data['ride_request_id']);
           }
-
         }
 
         ///checking which notification are not shown.
-        if(!(message.data['action'] == "customer_canceled_trip" || message.data['action'] == "another_driver_assigned" || message.data['type'] == 'maintenance_mode_on' || message.data['type'] == 'maintenance_mode_off')){
-          if(message.data['status'] == '1'){
-            NotificationHelper.showNotification(message, flutterLocalNotificationsPlugin, true);
+        if (!(message.data['action'] == "customer_canceled_trip" ||
+            message.data['action'] == "another_driver_assigned" ||
+            message.data['type'] == 'maintenance_mode_on' ||
+            message.data['type'] == 'maintenance_mode_off')) {
+          if (message.data['status'] == '1') {
+            NotificationHelper.showNotification(
+                message, flutterLocalNotificationsPlugin, true);
           }
-
         }
       }
 
-      if(message.data['type'] == 'maintenance_mode_on' || message.data['type'] == 'maintenance_mode_off'){
+      if (message.data['type'] == 'maintenance_mode_on' ||
+          message.data['type'] == 'maintenance_mode_off') {
         Get.find<SplashController>().getConfigData(reload: false);
       }
 
-      if(message.data['action'] == 'parcel_amount_deducted') {
-       _whenParcelAmountDeducted(message);
-
+      if (message.data['action'] == 'parcel_amount_deducted') {
+        _whenParcelAmountDeducted(message);
       }
-
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       customPrint('onOpenApp: ${message.data}');
       notificationToRoute(message.data);
-
     });
   }
 
-  static Future<void> showNotification(RemoteMessage message, FlutterLocalNotificationsPlugin fln, bool data) async {
+  static Future<void> _createAndroidNotificationChannel(
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      _androidChannelId,
+      _androidChannelName,
+      importance: Importance.max,
+      playSound: true,
+      sound: _androidNotificationSound,
+    );
+
+    const AndroidNotificationChannel requestChannel =
+        AndroidNotificationChannel(
+      _androidRequestChannelId,
+      _androidRequestChannelName,
+      description:
+          'Floating alerts for new trip and parcel requests while the app is in the background',
+      importance: Importance.max,
+      playSound: true,
+      sound: _androidNotificationSound,
+    );
+
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.createNotificationChannel(channel);
+    await androidImplementation?.createNotificationChannel(requestChannel);
+  }
+
+  /// Ask Android (14+) to allow full-screen/floating request alerts.
+  /// Safe no-op on iOS and when permission is already granted or denied;
+  /// denied devices simply keep getting regular heads-up notifications.
+  static Future<void> requestFloatingAlertPermission() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+    try {
+      final FlutterLocalNotificationsPlugin plugin =
+          FlutterLocalNotificationsPlugin();
+      await plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestFullScreenIntentPermission();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Floating alert permission request failed: $e');
+      }
+    }
+  }
+
+  /// Shows a one-time explanatory dialog asking the driver to allow
+  /// floating (full-screen) trip request alerts. Only appears when the
+  /// admin has enabled the feature and the driver has not been asked yet.
+  static Future<void> maybePromptFloatingAlerts() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    final bool enabled = Get.find<SplashController>()
+            .config
+            ?.driverFloatingOverlayEnabled ??
+        false;
+    if (!enabled) {
+      return;
+    }
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(AppConstants.floatingOverlayPrompted) ?? false) {
+      return;
+    }
+    await prefs.setBool(AppConstants.floatingOverlayPrompted, true);
+
+    if (Get.context == null) {
+      return;
+    }
+
+    Get.dialog(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(children: [
+        Icon(Icons.notifications_active,
+            color: Theme.of(Get.context!).primaryColor),
+        const SizedBox(width: 8),
+        Expanded(child: Text('enable_floating_trip_alerts'.tr)),
+      ]),
+      content: Text('floating_trip_alerts_description'.tr),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: Text('not_now'.tr,
+              style: TextStyle(color: Theme.of(Get.context!).hintColor)),
+        ),
+        TextButton(
+          onPressed: () async {
+            Get.back();
+            await requestFloatingAlertPermission();
+          },
+          child: Text('enable'.tr,
+              style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+      ],
+    ));
+  }
+
+  static bool _isNewRequestAction(String? action) {
+    return action == 'new_ride_request' || action == 'new_parcel_request';
+  }
+
+  /// Floating (full-screen intent) notification used for incoming trip and
+  /// parcel requests when the admin has enabled the driver floating overlay.
+  static Future<void> showFloatingRequestNotification(RemoteMessage message,
+      FlutterLocalNotificationsPlugin fln) async {
+    final String title = message.data['title'] ?? 'New request';
+    final String body = message.data['body'] ?? '';
+
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      _androidRequestChannelId,
+      _androidRequestChannelName,
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      sound: _androidNotificationSound,
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.call,
+      styleInformation: BigTextStyleInformation(
+        body,
+        htmlFormatBigText: true,
+        contentTitle: title,
+        htmlFormatContentTitle: true,
+      ),
+    );
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await fln.show(
+        id: 1,
+        title: title,
+        body: body,
+        notificationDetails: platformChannelSpecifics,
+        payload: message.data['ride_request_id']);
+  }
+
+  static Future<void> showNotification(RemoteMessage message,
+      FlutterLocalNotificationsPlugin fln, bool data) async {
     String title = message.data['title'];
     String body = message.data['body'];
     String? orderID = message.data['order_id'];
-    String? image = (message.data['image'] != null && message.data['image'].isNotEmpty) ?
-    message.data['image'].startsWith('http') ?
-    message.data['image'] :
-    '${AppConstants.baseUrl}/storage/app/public/notification/${message.data['image']}' :
-    null;
+    String? image = (message.data['image'] != null &&
+            message.data['image'].isNotEmpty)
+        ? message.data['image'].startsWith('http')
+            ? message.data['image']
+            : '${AppConstants.baseUrl}/storage/app/public/notification/${message.data['image']}'
+        : null;
 
     try {
-      await showBigPictureNotificationHiddenLargeIcon(title, body, orderID, image, fln);
+      await showBigPictureNotificationHiddenLargeIcon(
+          title, body, orderID, image, fln);
     } catch (e) {
-      await showBigPictureNotificationHiddenLargeIcon(title, body, orderID, null, fln);
+      await showBigPictureNotificationHiddenLargeIcon(
+          title, body, orderID, null, fln);
       customPrint('Failed to show notification: ${e.toString()}');
     }
   }
 
-  static Future<void> showTextNotification(String title, String body, String orderID, String action, FlutterLocalNotificationsPlugin fln) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'hexaride',
-      'hexaride',
+  static Future<void> showTextNotification(
+      String title,
+      String body,
+      String orderID,
+      String action,
+      FlutterLocalNotificationsPlugin fln) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
       playSound: true,
       importance: Importance.max,
       priority: Priority.max,
-      sound: RawResourceAndroidNotificationSound('notification'),
+      sound: _androidNotificationSound,
     );
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-    await fln.show(id: 0, title: title, body: body, notificationDetails: platformChannelSpecifics, payload: action);
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await fln.show(
+        id: 0,
+        title: title,
+        body: body,
+        notificationDetails: platformChannelSpecifics,
+        payload: action);
   }
 
-  static Future<void> showBigTextNotification(String title, String body, String orderID, String action, FlutterLocalNotificationsPlugin fln) async {
+  static Future<void> showBigTextNotification(
+      String title,
+      String body,
+      String orderID,
+      String action,
+      FlutterLocalNotificationsPlugin fln) async {
     BigTextStyleInformation bigTextStyleInformation = BigTextStyleInformation(
       body,
       htmlFormatBigText: true,
       contentTitle: title,
       htmlFormatContentTitle: true,
     );
-    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'hexaride',
-      'hexaride',
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
       importance: Importance.max,
       styleInformation: bigTextStyleInformation,
       priority: Priority.max,
       playSound: true,
-      sound: const RawResourceAndroidNotificationSound('notification'),
+      sound: _androidNotificationSound,
     );
-    NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-    await fln.show(id: 0, title: title, body: body, notificationDetails: platformChannelSpecifics, payload: action);
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await fln.show(
+        id: 0,
+        title: title,
+        body: body,
+        notificationDetails: platformChannelSpecifics,
+        payload: action);
   }
 
-  static Future<void> showBigPictureNotificationHiddenLargeIcon(String title, String body, String? orderID, String? image, FlutterLocalNotificationsPlugin fln) async {
+  static Future<void> showBigPictureNotificationHiddenLargeIcon(
+      String title,
+      String body,
+      String? orderID,
+      String? image,
+      FlutterLocalNotificationsPlugin fln) async {
     String? largeIconPath;
     String? bigPicturePath;
     BigPictureStyleInformation? bigPictureStyleInformation;
@@ -345,32 +531,40 @@ class NotificationHelper {
         summaryText: body,
         htmlFormatSummaryText: true,
       );
-
-    }
-    else {
+    } else {
       bigTextStyleInformation = BigTextStyleInformation(
         body,
         htmlFormatBigText: true,
         contentTitle: title,
         htmlFormatContentTitle: true,
       );
-
     }
-    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'hexaride',
-      'hexaride',
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
       priority: Priority.max,
       importance: Importance.max,
       playSound: true,
-      largeIcon: largeIconPath != null ? FilePathAndroidBitmap(largeIconPath) : null,
-      styleInformation: largeIconPath != null ? bigPictureStyleInformation : bigTextStyleInformation,
-      sound: const RawResourceAndroidNotificationSound('notification'),
+      largeIcon:
+          largeIconPath != null ? FilePathAndroidBitmap(largeIconPath) : null,
+      styleInformation: largeIconPath != null
+          ? bigPictureStyleInformation
+          : bigTextStyleInformation,
+      sound: _androidNotificationSound,
     );
-    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-    await fln.show(id: 0, title: title, body: body, notificationDetails: platformChannelSpecifics, payload: orderID);
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await fln.show(
+        id: 0,
+        title: title,
+        body: body,
+        notificationDetails: platformChannelSpecifics,
+        payload: orderID);
   }
 
-  static Future<String> _downloadAndSaveFile(String url, String fileName) async {
+  static Future<String> _downloadAndSaveFile(
+      String url, String fileName) async {
     final Directory directory = await getApplicationDocumentsDirectory();
     final String filePath = '${directory.path}/$fileName';
     final http.Response response = await http.get(Uri.parse(url));
@@ -379,64 +573,67 @@ class NotificationHelper {
     return filePath;
   }
 
-  static Future<void> notificationToRoute(Map<String,dynamic> data, {bool formSplash = false, String? userName}) async {
+  static Future<void> notificationToRoute(Map<String, dynamic> data,
+      {bool formSplash = false, String? userName}) async {
     if (data['action'] == "new_message") {
       Get.find<ChatController>().getConversation(data['type'], 1);
-      _toRoute(formSplash, MessageScreen(channelId: data['type'], tripId: data['ride_request_id'], userName: userName ?? data['user_name']));
-
-    }
-    else if (data['action'] == "new_ride_request" || data['action'] == "new_parcel_request") {
-
-      Get.find<RideController>().ongoingTripList().then((value){
-        if((Get.find<RideController>().ongoingTrip ?? []).isEmpty){
-          Get.find<RideController>().getRideDetailBeforeAccept(data['ride_request_id']).then((value) {
+      _toRoute(
+          formSplash,
+          MessageScreen(
+              channelId: data['type'],
+              tripId: data['ride_request_id'],
+              userName: userName ?? data['user_name']));
+    } else if (data['action'] == "new_ride_request" ||
+        data['action'] == "new_parcel_request") {
+      Get.find<RideController>().ongoingTripList().then((value) {
+        if ((Get.find<RideController>().ongoingTrip ?? []).isEmpty) {
+          Get.find<RideController>()
+              .getRideDetailBeforeAccept(data['ride_request_id'])
+              .then((value) {
             if (value.statusCode == 200) {
-              Get.find<RideController>().getPendingRideRequestList(1, limit: 100);
+              Get.find<RideController>()
+                  .getPendingRideRequestList(1, limit: 100);
               Get.find<RideController>().setRideId(data['ride_request_id']);
               Get.find<RiderMapController>().getPickupToDestinationPolyline();
-              Get.find<RiderMapController>().setRideCurrentState(RideState.pending);
+              Get.find<RiderMapController>()
+                  .setRideCurrentState(RideState.pending);
               Get.find<RideController>().updateRoute(false, notify: true);
-              if(formSplash && data['type'] == "parcel"){
+              if (formSplash && data['type'] == "parcel") {
                 Get.find<RideController>().getOngoingParcelList();
               }
               _toRoute(formSplash, const MapScreen());
-
             }
           });
-
-        }else{
-          if(Get.currentRoute != '/RideRequestScreen'){
-            Get.to(()=> RideRequestScreen());
-          }else{
+        } else {
+          if (Get.currentRoute != '/RideRequestScreen') {
+            Get.to(() => RideRequestScreen());
+          } else {
             Get.find<RideController>().getPendingRideRequestList(1, limit: 100);
           }
-
         }
       });
-      
-
-    }
-    else if (data['action'] == "bid_accepted") {
+    } else if (data['action'] == "bid_accepted") {
       ///Bid Ride Accepted in this case....
-      Get.find<RideController>().getRideDetails(data['ride_request_id']).then((value) {
+      Get.find<RideController>()
+          .getRideDetails(data['ride_request_id'])
+          .then((value) {
         if (value.statusCode == 200) {
-          Get.find<RiderMapController>().setRideCurrentState(RideState.outForPickup);
+          Get.find<RiderMapController>()
+              .setRideCurrentState(RideState.outForPickup);
           Get.find<RideController>().updateRoute(false, notify: true);
           _toRoute(formSplash, const MapScreen());
         }
       });
-    }
-    else if (data['action'] == "payment_successful" && data['type'] == "ride_request") {
+    } else if (data['action'] == "payment_successful" &&
+        data['type'] == "ride_request") {
       Get.offAll(() => const DashboardScreen());
       Get.find<BottomMenuController>().setTabIndex(3);
-
-    }
-    else if (data['action'] == "payment_successful" && data['type'] == "parcel") {
+    } else if (data['action'] == "payment_successful" &&
+        data['type'] == "parcel") {
       Get.offAll(() => const DashboardScreen());
       Get.find<BottomMenuController>().setTabIndex(3);
-
-    }
-    else if (data['action'] == "customer_canceled_trip" || data['action'] == "another_driver_assigned") {
+    } else if (data['action'] == "customer_canceled_trip" ||
+        data['action'] == "another_driver_assigned") {
       Get.find<RideController>().getPendingRideRequestList(1).then((value) {
         Get.find<RideController>().tripDetail = null;
         if (value.statusCode == 200) {
@@ -444,51 +641,40 @@ class NotificationHelper {
           Get.offAll(() => const DashboardScreen());
         }
       });
-
-    }
-    else if (checkContainsAction(data['action'])) {
+    } else if (checkContainsAction(data['action'])) {
       Get.find<ProfileController>().getProfileInfo().then((value) {
         if (value.statusCode == 200) {
           Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
-          Get.find<ProfileController>().setProfileTypeIndex(2,isUpdate: true);
+          Get.find<ProfileController>().setProfileTypeIndex(2, isUpdate: true);
           _toRoute(formSplash, const ProfileScreen());
-
         }
       });
-
-    }
-    else if(data['action'] == "withdraw_request_rejected" ||
+    } else if (data['action'] == "withdraw_request_rejected" ||
         data['action'] == "withdraw_request_approved" ||
-        data['action'] == "admin_collected_cash" || data['action'] == "withdraw_request_reversed") {
+        data['action'] == "admin_collected_cash" ||
+        data['action'] == "withdraw_request_reversed") {
       Get.offAll(() => const DashboardScreen());
       Get.find<BottomMenuController>().setTabIndex(3);
-
-    }
-    else if(data['action'] == "withdraw_request_settled") {
+    } else if (data['action'] == "withdraw_request_settled") {
       Get.offAll(() => const DashboardScreen());
       Get.find<BottomMenuController>().setTabIndex(3);
       Get.find<WalletController>().setSelectedHistoryIndex(1, true);
-
-    }
-    else if(data['action'] == "customer_rejected_bid"){
+    } else if (data['action'] == "customer_rejected_bid") {
       Get.offAll(() => const DashboardScreen());
-
-    }
-    else if(data['action'] == "review_from_customer"){
+    } else if (data['action'] == "review_from_customer") {
       _toRoute(formSplash, const ReviewScreen());
-
-    }
-    else if(data['action'] == 'identity_image_approved' || data['action'] == 'identity_image_rejected'){
+    } else if (data['action'] == 'identity_image_approved' ||
+        data['action'] == 'identity_image_rejected') {
       Get.find<ProfileController>().getProfileInfo().then((value) {
-        _toRoute(formSplash, ProfileEditScreen(profileInfo: Get.find<ProfileController>().profileInfo!));
+        _toRoute(
+            formSplash,
+            ProfileEditScreen(
+                profileInfo: Get.find<ProfileController>().profileInfo!));
       });
-
-    }
-    else if(data['action'] == 'level_up'){
-
+    } else if (data['action'] == 'level_up') {
       Get.find<ProfileController>().getProfileLevelInfo();
 
-      if(formSplash) {
+      if (formSplash) {
         _toRoute(formSplash, const DashboardScreen());
       }
 
@@ -501,239 +687,285 @@ class NotificationHelper {
           reward: data['reward_amount'],
         ),
       );
-
-    }
-    else if(data['action'] == 'privacy_policy_updated'){
-      Get.find<SplashController>().getConfigData().then((value){
-        _toRoute(formSplash, PolicyViewerScreen(
-          htmlType: HtmlType.privacyPolicy,
-          image: Get.find<SplashController>().config?.privacyPolicy?.image??'',
-        ));
+    } else if (data['action'] == 'privacy_policy_updated') {
+      Get.find<SplashController>().getConfigData().then((value) {
+        _toRoute(
+            formSplash,
+            PolicyViewerScreen(
+              htmlType: HtmlType.privacyPolicy,
+              image:
+                  Get.find<SplashController>().config?.privacyPolicy?.image ??
+                      '',
+            ));
       });
-
-    }
-    else if(data['action'] == 'legal_updated'){
-      Get.find<SplashController>().getConfigData().then((value){
-        _toRoute(formSplash, PolicyViewerScreen(
-            htmlType: HtmlType.legal,
-            image: Get.find<SplashController>().config?.legal?.image??''
-        ));
+    } else if (data['action'] == 'legal_updated') {
+      Get.find<SplashController>().getConfigData().then((value) {
+        _toRoute(
+            formSplash,
+            PolicyViewerScreen(
+                htmlType: HtmlType.legal,
+                image:
+                    Get.find<SplashController>().config?.legal?.image ?? ''));
       });
-
-    }
-    else if(data['action'] == 'terms_and_conditions_updated'){
-      Get.find<SplashController>().getConfigData().then((value){
-        _toRoute(formSplash, PolicyViewerScreen(htmlType: HtmlType.termsAndConditions,
-            image: Get.find<SplashController>().config?.termsAndConditions?.image??''
-        ));
+    } else if (data['action'] == 'terms_and_conditions_updated') {
+      Get.find<SplashController>().getConfigData().then((value) {
+        _toRoute(
+            formSplash,
+            PolicyViewerScreen(
+                htmlType: HtmlType.termsAndConditions,
+                image: Get.find<SplashController>()
+                        .config
+                        ?.termsAndConditions
+                        ?.image ??
+                    ''));
       });
-
-    }
-    else if(data['action'] == 'referral_reward_received'){
+    } else if (data['action'] == 'referral_reward_received') {
       _toRoute(formSplash, const ReferAndEarnScreen());
-    }
-    else if(data['action'] == 'parcel_amount_deducted'){
+    } else if (data['action'] == 'parcel_amount_deducted') {
       _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
-    }
-    else if(data['action'] == 'refund_accepted'){
+    } else if (data['action'] == 'refund_accepted') {
       _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
-    }
-    else if(data['action'] == 'refund_denied'){
+    } else if (data['action'] == 'refund_denied') {
       _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
-    }
-    else if(data['action'] == 'parcel_amount_debited'){
+    } else if (data['action'] == 'parcel_amount_debited') {
       Get.offAll(() => const DashboardScreen());
       Get.find<BottomMenuController>().setTabIndex(3);
-    }
-    else if(data['action'] == 'tips_from_customer'){
+    } else if (data['action'] == 'tips_from_customer') {
       _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
-    }
-    else if(data['action'] == 'admin_message'){
+    } else if (data['action'] == 'admin_message') {
       Get.find<HelpAndSupportController>().getPredefineFaqList();
-      Get.find<HelpAndSupportController>().createChannel(fromSplash: formSplash);
-
-    }
-    else if(data['action'] == 'safety_problem_resolved' && data['type'] == 'safety_alert'){
-      Get.find<RideController>().getRideDetails(data['ride_request_id']).then((value) {
+      Get.find<HelpAndSupportController>()
+          .createChannel(fromSplash: formSplash);
+    } else if (data['action'] == 'safety_problem_resolved' &&
+        data['type'] == 'safety_alert') {
+      Get.find<RideController>()
+          .getRideDetails(data['ride_request_id'])
+          .then((value) {
         if (value.statusCode == 200) {
-          if(Get.find<RideController>().tripDetail?.currentStatus == 'ongoing'){
-            if(Get.currentRoute != '/MapScreen') {
-              Get.find<RiderMapController>().setRideCurrentState(RideState.ongoing);
+          if (Get.find<RideController>().tripDetail?.currentStatus ==
+              'ongoing') {
+            if (Get.currentRoute != '/MapScreen') {
+              Get.find<RiderMapController>()
+                  .setRideCurrentState(RideState.ongoing);
               _toRoute(formSplash, const MapScreen());
             }
-          }else{
-            if(Get.currentRoute != '/TripDetails') {
-              _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
+          } else {
+            if (Get.currentRoute != '/TripDetails') {
+              _toRoute(
+                  formSplash, TripDetails(tripId: data['ride_request_id']));
             }
           }
         }
       });
-
-    }
-    else if(data['action'] == 'parcel_return_penalty'){
+    } else if (data['action'] == 'parcel_return_penalty') {
       _toRoute(formSplash, TripDetails(tripId: data['ride_request_id']));
-    }
-    else {
+    } else {
       Get.offAll(() => const DashboardScreen());
     }
-
   }
 
   static Future _toRoute(bool formSplash, Widget page) async {
-    if(formSplash) {
+    if (formSplash) {
       await Get.offAll(() => page);
-
-    }else {
+    } else {
       await Get.to(() => page);
     }
   }
-
 }
 
+@pragma('vm:entry-point')
 Future<dynamic> myBackgroundMessageHandler(RemoteMessage remoteMessage) async {
   customPrint('onBackground: ${remoteMessage.data}');
-  // var androidInitialize = new AndroidInitializationSettings('notification_icon');
-  // var iOSInitialize = new IOSInitializationSettings();
-  // var initializationsSettings = new InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
-  // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  // flutterLocalNotificationsPlugin.initialize(initializationsSettings);
-  // NotificationHelper.showNotification(message, flutterLocalNotificationsPlugin, true);
+  await Firebase.initializeApp();
+
+  if (remoteMessage.notification != null ||
+      remoteMessage.data['title'] == null ||
+      remoteMessage.data['body'] == null) {
+    return;
+  }
+
+  const AndroidInitializationSettings androidInitialize =
+      AndroidInitializationSettings('notification_icon');
+  const DarwinInitializationSettings iOSInitialize =
+      DarwinInitializationSettings();
+  const InitializationSettings initializationsSettings =
+      InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin.initialize(settings: initializationsSettings);
+  await NotificationHelper._createAndroidNotificationChannel(
+      flutterLocalNotificationsPlugin);
+
+  bool floatingOverlayEnabled = false;
+  try {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    floatingOverlayEnabled =
+        prefs.getBool(AppConstants.floatingOverlayEnabled) ?? false;
+  } catch (_) {}
+
+  if (floatingOverlayEnabled &&
+      NotificationHelper._isNewRequestAction(remoteMessage.data['action'])) {
+    await NotificationHelper.showFloatingRequestNotification(
+        remoteMessage, flutterLocalNotificationsPlugin);
+  } else {
+    await NotificationHelper.showNotification(
+        remoteMessage, flutterLocalNotificationsPlugin, true);
+  }
 }
 
-Future<dynamic> myBackgroundMessageReceiver(NotificationResponse response) async {
+@pragma('vm:entry-point')
+Future<dynamic> myBackgroundMessageReceiver(
+    NotificationResponse response) async {
   customPrint('onBackgroundClicked: ${response.payload}');
 }
 
-
- bool checkContainsAction(String action){
-  List<String> actions = ['vehicle_request_approved','vehicle_update_denied','vehicle_update_approved','vehicle_request_denied'];
-  if(actions.contains(action)){
+bool checkContainsAction(String action) {
+  List<String> actions = [
+    'vehicle_request_approved',
+    'vehicle_update_denied',
+    'vehicle_update_approved',
+    'vehicle_request_denied'
+  ];
+  if (actions.contains(action)) {
     return true;
-  }else{
+  } else {
     return false;
   }
- }
+}
 
- void _whenNewRequestFound(RemoteMessage message){
-   Get.find<RideController>().ongoingTripList().then((value){
-     if((Get.find<RideController>().ongoingTrip ?? []).isEmpty){
-       Get.find<RideController>().getPendingRideRequestList(1);
-       AudioPlayer audio = AudioPlayer();
-       audio.play(AssetSource('notification.wav'));
-       Get.find<RideController>().setRideId(message.data['ride_request_id']);
-       Get.find<RideController>().getRideDetailBeforeAccept(message.data['ride_request_id']).then((value) {
-         if (value.statusCode == 200) {
-           Get.find<RiderMapController>().getPickupToDestinationPolyline();
-           Get.find<RiderMapController>().setRideCurrentState(RideState.pending);
-           Get.find<RideController>().updateRoute(false, notify: true);
-           Get.to(() => const MapScreen());
-         }
-       });
+void _whenNewRequestFound(RemoteMessage message) {
+  Get.find<RideController>().ongoingTripList().then((value) {
+    if ((Get.find<RideController>().ongoingTrip ?? []).isEmpty) {
+      Get.find<RideController>().getPendingRideRequestList(1);
+      AudioPlayer audio = AudioPlayer();
+      audio.play(AssetSource('notification.wav'));
+      Get.find<RideController>().setRideId(message.data['ride_request_id']);
+      Get.find<RideController>()
+          .getRideDetailBeforeAccept(message.data['ride_request_id'])
+          .then((value) {
+        if (value.statusCode == 200) {
+          Get.find<RiderMapController>().getPickupToDestinationPolyline();
+          Get.find<RiderMapController>().setRideCurrentState(RideState.pending);
+          Get.find<RideController>().updateRoute(false, notify: true);
+          Get.to(() => const MapScreen());
+        }
+      });
+    } else {
+      if (Get.currentRoute == '/MapScreen') {
+        Get.find<RideController>().getPendingRideRequestList(1, limit: 100);
+      } else {
+        Get.to(() => const RideRequestScreen());
+      }
+    }
+  });
+}
 
-     }else{
-       if(Get.currentRoute == '/MapScreen'){
-         Get.find<RideController>().getPendingRideRequestList(1,limit: 100);
-       }else{
-         Get.to(()=> const RideRequestScreen());
-       }
+void _whenRideComplete(RemoteMessage message) {
+  Get.find<SafetyAlertController>().cancelDriverNeedSafetyStream();
+  Get.find<RideController>()
+      .getRideDetails(message.data['ride_request_id'])
+      .then((value) {
+    if (value.statusCode == 200) {
+      Get.find<RideController>()
+          .getFinalFare(message.data['ride_request_id'])
+          .then((value) {
+        if (value.statusCode == 200) {
+          Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
+          Get.to(() => const PaymentReceivedScreen());
+        }
+      });
+    }
+  });
+}
 
-     }
-   });
- }
+void _whenCustomerBidAccept(RemoteMessage message) {
+  Get.find<RideController>().ongoingTripList().then((value) {
+    if ((Get.find<RideController>().ongoingTrip ?? []).length <= 1) {
+      Get.find<RideController>()
+          .getRideDetails(message.data['ride_request_id'])
+          .then((value) {
+        if (value.statusCode == 200) {
+          Get.find<RiderMapController>()
+              .setRideCurrentState(RideState.outForPickup);
+          Get.find<RideController>().updateRoute(false, notify: true);
+          Get.to(() => const MapScreen());
+        }
+      });
+    } else {
+      if (Get.currentRoute == '/RideRequestScreen') {
+        Get.back();
+      }
+    }
+  });
+}
 
- void _whenRideComplete(RemoteMessage message){
-   Get.find<SafetyAlertController>().cancelDriverNeedSafetyStream();
-   Get.find<RideController>().getRideDetails(message.data['ride_request_id']).then((value) {
-     if (value.statusCode == 200) {
-       Get.find<RideController>().getFinalFare(message.data['ride_request_id']).then((value) {
-         if (value.statusCode == 200) {
-           Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
-           Get.to(() => const PaymentReceivedScreen());
-         }
-       });
-     }
-   });
- }
+void _whenRidePaymentSuccess(RemoteMessage message) {
+  Get.find<RideController>().ongoingTripList().then((value) {
+    if ((Get.find<RideController>().ongoingTrip ?? []).isEmpty) {
+      Get.find<RideController>()
+          .getRideDetails(message.data['ride_request_id'])
+          .then((value) {
+        if (value.statusCode == 200) {
+          if (Get.find<SplashController>().config!.reviewStatus!) {
+            Get.offAll(() => ReviewThisCustomerScreen(
+                tripId: message.data['ride_request_id']));
+          } else {
+            Get.offAll(() => const DashboardScreen());
+          }
+        }
+      });
+    } else {
+      Get.offAll(() => const RideListScreen());
+    }
+  });
+}
 
- void _whenCustomerBidAccept(RemoteMessage message){
-   Get.find<RideController>().ongoingTripList().then((value){
-     if((Get.find<RideController>().ongoingTrip ?? []).length <= 1){
-       Get.find<RideController>().getRideDetails(message.data['ride_request_id']).then((value) {
-         if (value.statusCode == 200) {
-           Get.find<RiderMapController>().setRideCurrentState(RideState.outForPickup);
-           Get.find<RideController>().updateRoute(false, notify: true);
-           Get.to(() => const MapScreen());
-         }
-       });
+void _whenCustomerCancelTrip(RemoteMessage message) {
+  if (Get.find<RideController>().tripDetail?.id ==
+      message.data['ride_request_id']) {
+    Get.find<SafetyAlertController>().cancelDriverNeedSafetyStream();
+    Get.find<RideController>().tripDetail = null;
+    Get.find<RideController>().getPendingRideRequestList(1).then((value) {
+      if (value.statusCode == 200) {
+        Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
+        Get.offAll(() => const DashboardScreen());
+      }
+    });
+  } else {
+    Get.find<RideController>().ongoingTripList();
+    Get.find<RideController>().getPendingRideRequestList(1, limit: 100);
+  }
+}
 
-     }else{
-       if(Get.currentRoute == '/RideRequestScreen'){
-         Get.back();
-       }
-     }
-   });
- }
+void _whenDriverLevelUp(RemoteMessage message) {
+  Get.find<ProfileController>().getProfileLevelInfo();
+  showDialog(
+    context: Get.context!,
+    barrierDismissible: false,
+    builder: (_) => LevelCongratulationsDialogWidget(
+      levelName: message.data['next_level'],
+      rewardType: message.data['reward_type'],
+      reward: message.data['reward_amount'],
+    ),
+  );
+}
 
- void _whenRidePaymentSuccess(RemoteMessage message){
-   Get.find<RideController>().ongoingTripList().then((value){
-     if((Get.find<RideController>().ongoingTrip ?? []).isEmpty){
-       Get.find<RideController>().getRideDetails(message.data['ride_request_id']).then((value) {
-         if (value.statusCode == 200) {
-           if (Get.find<SplashController>().config!.reviewStatus!) {
-             Get.offAll(() => ReviewThisCustomerScreen(tripId: message.data['ride_request_id']));
-           } else {
-             Get.offAll(() => const DashboardScreen());
-           }
-         }
-       });
-
-     }else{
-       Get.offAll(()=> const RideListScreen());
-     }
-   });
- }
-
- void _whenCustomerCancelTrip(RemoteMessage message){
-   if(Get.find<RideController>().tripDetail?.id == message.data['ride_request_id']){
-     Get.find<SafetyAlertController>().cancelDriverNeedSafetyStream();
-     Get.find<RideController>().tripDetail = null;
-     Get.find<RideController>().getPendingRideRequestList(1).then((value) {
-       if (value.statusCode == 200) {
-         Get.find<RiderMapController>().setRideCurrentState(RideState.initial);
-         Get.offAll(() => const DashboardScreen());
-       }
-     });
-
-   }else{
-     Get.find<RideController>().ongoingTripList();
-     Get.find<RideController>().getPendingRideRequestList(1,limit: 100);
-   }
- }
-
- void _whenDriverLevelUp(RemoteMessage message){
-   Get.find<ProfileController>().getProfileLevelInfo();
-   showDialog(
-     context: Get.context!,
-     barrierDismissible: false,
-     builder: (_) => LevelCongratulationsDialogWidget(
-       levelName: message.data['next_level'],
-       rewardType: message.data['reward_type'],
-       reward: message.data['reward_amount'],
-     ),
-   );
- }
-
-void _whenParcelAmountDeducted(RemoteMessage message){
+void _whenParcelAmountDeducted(RemoteMessage message) {
   final RideController rideController = Get.find<RideController>();
-  bool isShowBottomSheet = ((rideController.ongoingRideList?.length ?? 0) == 0) && ((rideController.parcelListModel?.totalSize ?? 0) == 0 );
+  bool isShowBottomSheet =
+      ((rideController.ongoingRideList?.length ?? 0) == 0) &&
+          ((rideController.parcelListModel?.totalSize ?? 0) == 0);
 
-  if(isShowBottomSheet) {
-    showModalBottomSheet(context: Get.context!, builder: (ctx)=> RefundAlertBottomSheet(
-      title: message.data['title'],
-      description: message.data['body'],
-      tripId: message.data['ride_request_id'],
-    ));
-  }else {
+  if (isShowBottomSheet) {
+    showModalBottomSheet(
+        context: Get.context!,
+        builder: (ctx) => RefundAlertBottomSheet(
+              title: message.data['title'],
+              description: message.data['body'],
+              tripId: message.data['ride_request_id'],
+            ));
+  } else {
     /// Add the refund data to show dialog after complete ongoing ride
     Get.find<SplashController>().addLastReFoundData(message.data);
   }

@@ -84,6 +84,26 @@ class AuthService implements AuthServiceInterface {
   }
 
   @override
+  Future socialLogin({
+    required String token,
+    required String uniqueId,
+    required String email,
+    required String medium,
+  }) {
+    return authRepositoryInterface.socialLogin(
+      token: token,
+      uniqueId: uniqueId,
+      email: email,
+      medium: medium,
+    );
+  }
+
+  @override
+  Future directLogin({required String phone}) {
+    return authRepositoryInterface.directLogin(phone: phone);
+  }
+
+  @override
   Future registration(
       {required SignUpBody signUpBody,
       XFile? profileImage,

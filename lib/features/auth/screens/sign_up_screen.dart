@@ -32,6 +32,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: Scaffold(
           backgroundColor: Theme.of(context).cardColor,
           body: GetBuilder<AuthController>(builder: (authController) {
+            final bool isGoogleLogin = Get.find<SplashController>()
+                    .config
+                    ?.driverLoginOptions
+                    ?.googleLogin ??
+                false;
+
             return Column(children: [
               SignUpAppbarWidget(
                   enableBackButton: true,
@@ -93,7 +99,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: CheckboxListTile(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: Dimensions.paddingSizeSmall),
-                        title: Text('ride_share'.tr,
+                        title: Text('service_ride_driver'.tr,
                             style: textBold.copyWith(
                                 fontSize: 14,
                                 color: authController.isRideShare
@@ -116,7 +122,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             color: Theme.of(context)
                                 .hintColor
                                 .withValues(alpha: 0.5)),
-                        subtitle: Text('service_provide_text1'.tr,
+                        subtitle: Text('service_ride_driver_description'.tr,
                             style: textRegular.copyWith(
                               color: authController.isRideShare
                                   ? Theme.of(context)
@@ -155,7 +161,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: CheckboxListTile(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: Dimensions.paddingSizeSmall),
-                        title: Text('parcel_delivery'.tr,
+                        title: Text('service_delivery_driver'.tr,
                             style: textBold.copyWith(
                                 fontSize: 14,
                                 color: authController.isParcelShare
@@ -178,7 +184,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             color: Theme.of(context)
                                 .hintColor
                                 .withValues(alpha: 0.5)),
-                        subtitle: Text('service_provide_text2'.tr,
+                        subtitle: Text('service_delivery_driver_description'.tr,
                             style: textRegular.copyWith(
                                 color: authController.isParcelShare
                                     ? Theme.of(context)
@@ -215,20 +221,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         vertical: Dimensions.paddingSizeSmall,
                         horizontal: Dimensions.paddingSizeExtraSmall)
                     .copyWith(bottom: Dimensions.paddingSizeExtraLarge),
-                child: ButtonWidget(
-                  margin: EdgeInsets.symmetric(
-                      horizontal: Dimensions.paddingSizeDefault),
-                  radius: Dimensions.radiusExtraLarge,
-                  buttonText: 'next'.tr,
-                  onPressed: () {
-                    if (!authController.isRideShare &&
-                        !authController.isParcelShare) {
-                      showCustomSnackBar('required_to_select_service'.tr);
-                    } else {
-                      Get.to(() => const AdditionalSignUpScreen1());
-                    }
-                  },
-                ),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  if (isGoogleLogin) ...[
+                    ButtonWidget(
+                      showBorder: true,
+                      borderWidth: 1,
+                      transparent: true,
+                      assetIcon: Images.google,
+                      margin: EdgeInsets.symmetric(
+                          horizontal: Dimensions.paddingSizeDefault),
+                      radius: Dimensions.radiusExtraLarge,
+                      buttonText: 'sign_up_with_google'.tr,
+                      onPressed: authController.googleLogin,
+                    ),
+                    const SizedBox(height: Dimensions.paddingSizeSmall),
+                  ],
+                  ButtonWidget(
+                    margin: EdgeInsets.symmetric(
+                        horizontal: Dimensions.paddingSizeDefault),
+                    radius: Dimensions.radiusExtraLarge,
+                    buttonText: 'next'.tr,
+                    onPressed: () {
+                      if (!authController.isRideShare &&
+                          !authController.isParcelShare) {
+                        showCustomSnackBar('required_to_select_service'.tr);
+                      } else {
+                        Get.to(() => const AdditionalSignUpScreen1());
+                      }
+                    },
+                  ),
+                ]),
               ),
             ]);
           })),

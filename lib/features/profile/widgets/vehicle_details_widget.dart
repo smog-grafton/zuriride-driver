@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
+import 'package:ride_sharing_user_app/common_widgets/image_widget.dart';
 import 'package:ride_sharing_user_app/features/home/screens/vehicle_add_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/profile_item_widget.dart';
@@ -16,6 +17,11 @@ class VehicleDetailsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ProfileController>(builder: (profileController){
+      final List<String> vehiclePhotos =
+          profileController.profileInfo?.vehicle?.photos ?? [];
+      final String vehiclePhotoBaseUrl =
+          Get.find<SplashController>().config?.imageBaseUrl?.vehiclePhoto ?? '';
+
       return profileController.profileInfo!.vehicle != null ?
       Container(
         padding: EdgeInsets.all(Dimensions.paddingSizeDefault),
@@ -24,20 +30,41 @@ class VehicleDetailsWidget extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(Dimensions.radiusDefault))
         ),
         child: Column(children: [
+          if(vehiclePhotos.isNotEmpty) ...[
+            SizedBox(
+              height: 110,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: vehiclePhotos.length,
+                separatorBuilder: (_, __) => const SizedBox(width: Dimensions.paddingSizeSmall),
+                itemBuilder: (context, index) => ClipRRect(
+                  borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                  child: ImageWidget(
+                    height: 110, width: 150, fit: BoxFit.cover,
+                    image: '$vehiclePhotoBaseUrl/${vehiclePhotos[index]}',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: Dimensions.paddingSizeDefault),
+          ],
+
           ProfileItemWidget(title: 'vehicle_category_type',
-            value: profileController.profileInfo!.vehicle!.category!.type!.tr,
+            value: profileController.profileInfo?.vehicle?.category?.type?.tr ?? '',
           ),
 
           ProfileItemWidget(title: 'vehicle_category',
-            value: profileController.profileInfo!.vehicle!.category!.name!.tr,
+            value: profileController.profileInfo?.vehicle?.category?.name?.tr ?? '',
           ),
 
           ProfileItemWidget(title: 'vehicle_brand',
-            value: profileController.profileInfo?.vehicle?.brand?.name ?? '',
+            value: profileController.profileInfo?.vehicle?.brand?.name
+                ?? profileController.profileInfo?.vehicle?.brandName ?? '',
           ),
 
           ProfileItemWidget(title: 'vehicle_model',
-            value: profileController.profileInfo?.vehicle?.model?.name ?? '',
+            value: profileController.profileInfo?.vehicle?.model?.name
+                ?? profileController.profileInfo?.vehicle?.modelName ?? '',
           ),
 
           if(_isShowParcelWeight(profileController.profileInfo?.details?.services))

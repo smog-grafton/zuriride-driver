@@ -9,6 +9,7 @@ import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.
 import 'package:ride_sharing_user_app/features/dashboard/controllers/bottom_menu_controller.dart';
 import 'package:ride_sharing_user_app/features/map/controllers/otp_time_count_controller.dart';
 import 'package:ride_sharing_user_app/features/map/widgets/trip_accept_warning_dialog_widget.dart';
+import 'package:ride_sharing_user_app/features/map/widgets/trip_request_timer_widget.dart';
 import 'package:ride_sharing_user_app/helper/date_converter.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
@@ -837,6 +838,9 @@ class _CommonDesignPart extends StatelessWidget {
                 ))
           ]),
         ),
+      if (rideRequest.type != 'scheduled_request' &&
+          rideRequest.currentStatus == 'pending')
+        TripRequestTimerWidget(createdAt: rideRequest.createdAt),
       const SizedBox(height: Dimensions.paddingSizeSmall),
       if (rideRequest.type == 'scheduled_request' &&
           (DateConverter.findTimeDifference(rideRequest.scheduledAt ?? '') >

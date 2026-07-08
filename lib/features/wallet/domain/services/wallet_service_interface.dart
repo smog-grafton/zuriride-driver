@@ -17,4 +17,6 @@ abstract class WalletServiceInterface {
   Future<dynamic> getCashCollectHistoryList(int offset);
   Future<dynamic> getWithdrawSettledList(int offset);
   Future<dynamic> getPaymentGetWayList();
+  Future<dynamic> depositViaIotec(String amount, String phone);
+  Future<dynamic> getIotecPaymentStatus(String paymentId);
 }

@@ -178,4 +178,17 @@ class WalletRepository implements WalletRepositoryInterface{
   Future getPaymentGetWayList() async{
     return await apiClient.getData(AppConstants.getPaymentMethods);
   }
+
+  @override
+  Future<Response?> depositViaIotec(String amount, String phone) async {
+    return await apiClient.postData(AppConstants.iotecDriverDeposit, {
+      'amount': amount,
+      'phone': phone,
+    });
+  }
+
+  @override
+  Future<Response?> getIotecPaymentStatus(String paymentId) async {
+    return await apiClient.getData('${AppConstants.iotecPaymentStatus}$paymentId');
+  }
 }

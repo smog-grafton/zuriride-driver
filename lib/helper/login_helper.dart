@@ -21,12 +21,10 @@ import 'package:ride_sharing_user_app/helper/notification_helper.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
 import 'pusher_helper.dart';
 
-class LoginHelper{
-
+class LoginHelper {
   LoginHelper();
 
   void handleIncomingLinks(Map<String, dynamic>? notificationData) async {
-
     final appLinks = AppLinks();
     final Uri? initialLink = await appLinks.getInitialLink();
     final String? deepLinkPath = initialLink?.path;
@@ -41,48 +39,56 @@ class LoginHelper{
         if (Get.find<LocalizationController>().haveLocalLanguageCode()) {
           checkLoginRoutes(notificationData);
         } else {
-          Get.offAll(() => LanguageSelectionScreen(notificationData: notificationData));
+          Get.offAll(() =>
+              LanguageSelectionScreen(notificationData: notificationData));
         }
       }
     });
   }
 
-  void checkLoginRoutes(Map<String,dynamic>? notificationData){
+  void checkLoginRoutes(Map<String, dynamic>? notificationData) {
     FirebaseHelper().subscribeFirebaseTopic();
-    if(Get.find<AuthController>().getUserToken().isNotEmpty){
+    if (Get.find<AuthController>().getUserToken().isNotEmpty) {
       PusherHelper.initializePusher();
     }
 
     Future.delayed(const Duration(milliseconds: 1000), () {
-      if(Get.find<AuthController>().isLoggedIn()){
-        if(Get.find<AuthController>().getZoneId() == ''){
-          Get.offAll(()=> const AccessLocationScreen());
-
-        }else{
+      if (Get.find<AuthController>().isLoggedIn()) {
+        if (Get.find<AuthController>().getZoneId() == '') {
+          Get.offAll(() => const AccessLocationScreen());
+        } else {
           Get.find<OutOfZoneController>().getZoneList();
-          Get.find<ProfileController>().getProfileInfo().then((value){
-            if(value.statusCode ==200){
-              Get.find<LocationController>().getCurrentLocation().then((value){
-                if(notificationData != null){
-                  NotificationHelper.notificationToRoute(notificationData, formSplash: true, userName: notificationData['user_name']);
-                }else{
-                  Get.offAll(()=> const DashboardScreen());
+          Get.find<ProfileController>().getProfileInfo().then((value) {
+            if (value.statusCode == 200) {
+              Get.find<LocationController>().getCurrentLocation().then((value) {
+                if (notificationData != null) {
+                  NotificationHelper.notificationToRoute(notificationData,
+                      formSplash: true,
+                      userName: notificationData['user_name']);
+                } else {
+                  Get.offAll(() => const DashboardScreen());
                 }
-
               });
-              PusherHelper().driverTripRequestSubscribe(value.body['data']['id']);
+              PusherHelper()
+                  .driverTripRequestSubscribe(value.body['data']['id']);
             }
           });
-
         }
-
-      }else{
-        if(Get.find<SplashController>().config!.maintenanceMode != null &&
-            Get.find<SplashController>().config!.maintenanceMode!.maintenanceStatus == 1 &&
-            Get.find<SplashController>().config!.maintenanceMode!.selectedMaintenanceSystem!.driverApp == 1
-        ){
+      } else {
+        if (Get.find<SplashController>().config!.maintenanceMode != null &&
+            Get.find<SplashController>()
+                    .config!
+                    .maintenanceMode!
+                    .maintenanceStatus ==
+                1 &&
+            Get.find<SplashController>()
+                    .config!
+                    .maintenanceMode!
+                    .selectedMaintenanceSystem!
+                    .driverApp ==
+                1) {
           Get.offAll(() => const MaintenanceScreen());
-        }else{
+        } else {
           checkLoginMedium();
         }
       }
@@ -90,23 +96,51 @@ class LoginHelper{
   }
 
   bool _isForceUpdate(ConfigModel? config) {
-    double minimumVersion = Platform.isAndroid
-        ? config?.androidAppMinimumVersion ?? 0
+    String minimumVersion = Platform.isAndroid
+        ? config?.androidAppMinimumVersion ?? '0'
         : Platform.isIOS
-        ? config?.iosAppMinimumVersion ?? 0
-        : 0;
+            ? config?.iosAppMinimumVersion ?? '0'
+            : '0';
 
-    return minimumVersion > 0 && minimumVersion > AppConstants.appVersion;
+    return _compareVersions(minimumVersion, '0') > 0 &&
+        _compareVersions(minimumVersion, AppConstants.appVersion) > 0;
   }
 
-  static void checkLoginMedium(){
-    final CustomerLoginOptions? loginOptions = Get.find<SplashController>().config?.driverLoginOptions;
+  int _compareVersions(String left, String right) {
+    final List<int> leftParts = _versionParts(left);
+    final List<int> rightParts = _versionParts(right);
+    final int maxLength = leftParts.length > rightParts.length
+        ? leftParts.length
+        : rightParts.length;
+
+    for (int i = 0; i < maxLength; i++) {
+      final int leftValue = i < leftParts.length ? leftParts[i] : 0;
+      final int rightValue = i < rightParts.length ? rightParts[i] : 0;
+
+      if (leftValue != rightValue) {
+        return leftValue.compareTo(rightValue);
+      }
+    }
+
+    return 0;
+  }
+
+  List<int> _versionParts(String version) {
+    return version
+        .split('.')
+        .map((part) => int.tryParse(part.trim()) ?? 0)
+        .toList();
+  }
+
+  static void checkLoginMedium() {
+    final CustomerLoginOptions? loginOptions =
+        Get.find<SplashController>().config?.driverLoginOptions;
     final bool isManualLogin = loginOptions?.manualLogin ?? true;
     final bool isOtpLogin = loginOptions?.otpLogin ?? false;
-    if(isManualLogin || !isOtpLogin){
-      Get.offAll(()=> const SignInScreen());
-    }else{
-      Get.offAll(()=> const OtpLoginScreen(fromSignIn: true));
+    if (isManualLogin || !isOtpLogin) {
+      Get.offAll(() => const SignInScreen());
+    } else {
+      Get.offAll(() => const OtpLoginScreen(fromSignIn: true));
     }
   }
 }

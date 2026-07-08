@@ -5,13 +5,18 @@ import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_bod
 abstract class ProfileServiceInterface {
   Future<dynamic> profileOnlineOffline();
   Future<dynamic> getProfileInfo();
+  Future<dynamic> getDriverDocumentRequests();
+  Future<dynamic> submitDriverDocumentRequest(
+      String requestId, List<MultipartBody> files);
   Future<dynamic> dailyLog();
   Future<dynamic> getVehicleModelList(int offset);
   Future<dynamic> getVehicleBrandList(int offset);
   Future<dynamic> getCategoryList(int offset);
   Future<dynamic> addNewVehicle(
-      VehicleBody vehicleBody, List<MultipartDocument> file);
-  Future<dynamic> updateVehicle(VehicleBody vehicleBody, String driverId);
+      VehicleBody vehicleBody, List<MultipartDocument> file,
+      List<MultipartBody> vehiclePhotos);
+  Future<dynamic> updateVehicle(
+      VehicleBody vehicleBody, String driverId, List<MultipartBody> vehiclePhotos);
   Future<dynamic> updateProfileInfo({
     required String firstName,
     required String lastname,

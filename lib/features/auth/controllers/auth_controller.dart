@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ride_sharing_user_app/data/api_checker.dart';
@@ -71,6 +72,7 @@ class AuthController extends GetxController
   bool _isLoading = false;
   bool _acceptTerms = false;
   bool _isOtpSending = false;
+  bool _isGoogleSignInInitialized = false;
   bool get isLoading => _isLoading;
   bool get acceptTerms => _acceptTerms;
   bool get isOtpSending => _isOtpSending;
@@ -272,6 +274,112 @@ class AuthController extends GetxController
       _isLoading = false;
       ApiChecker.checkApi(response);
     }
+    _isLoading = false;
+    update();
+  }
+
+  Future<void> googleLogin() async {
+    _isLoading = true;
+    update();
+
+    try {
+      final GoogleSignIn signIn = GoogleSignIn.instance;
+      if (!_isGoogleSignInInitialized) {
+        await signIn.initialize();
+        _isGoogleSignInInitialized = true;
+      }
+
+      final GoogleSignInAccount account = await signIn.authenticate();
+      final String? idToken = account.authentication.idToken;
+
+      if (idToken == null || idToken.isEmpty) {
+        // No ID token usually means the OAuth client / consent screen is
+        // missing or the SHA fingerprints are not registered in Firebase.
+        showCustomSnackBar('google_sign_in_failed_no_token'.tr);
+        _isLoading = false;
+        update();
+        return;
+      }
+
+      // Note: intentionally no FirebaseAuth.signInWithCredential here.
+      // The backend verifies the Google ID token itself, so Google login
+      // must not depend on the Firebase Auth Google provider being enabled.
+
+      Response? response = await authServiceInterface.socialLogin(
+        token: idToken,
+        uniqueId: account.id,
+        email: account.email,
+        medium: 'google',
+      );
+
+      if (response?.statusCode == 200) {
+        setUserToken(response!.body['data']['token']);
+        PusherHelper.initializePusher();
+        updateToken().then((value) async {
+          Get.find<OutOfZoneController>().getZoneList();
+          Response profileResponse =
+              await Get.find<ProfileController>().getProfileInfo();
+          if (profileResponse.statusCode == 200) {
+            if (Get.find<AuthController>().getZoneId() == '') {
+              Get.offAll(() => const AccessLocationScreen());
+            } else {
+              Get.offAll(() => const DashboardScreen());
+            }
+            PusherHelper()
+                .driverTripRequestSubscribe(profileResponse.body['data']['id']);
+          }
+        });
+      } else {
+        ApiChecker.checkApi(response!);
+      }
+    } on GoogleSignInException catch (error) {
+      debugPrint(
+          'Google sign-in failed: ${error.code.name} ${error.description ?? ''}');
+      if (error.code != GoogleSignInExceptionCode.canceled) {
+        showCustomSnackBar(
+            '${'google_sign_in_failed'.tr} (${error.code.name})');
+      }
+    } catch (error) {
+      debugPrint('Google sign-in failed: $error');
+      showCustomSnackBar('google_sign_in_failed'.tr);
+    }
+
+    _isLoading = false;
+    update();
+  }
+
+  /// Phone-number login without OTP. Only succeeds when the backend allows
+  /// it (phone login enabled and phone verification disabled).
+  Future<void> directPhoneLogin(
+      {required String countryCode, required String number}) async {
+    _isLoading = true;
+    update();
+
+    Response? response =
+        await authServiceInterface.directLogin(phone: countryCode + number);
+
+    if (response?.statusCode == 200 &&
+        response?.body['data']?['token'] != null) {
+      setUserToken(response!.body['data']['token']);
+      PusherHelper.initializePusher();
+      updateToken().then((value) async {
+        Get.find<OutOfZoneController>().getZoneList();
+        Response profileResponse =
+            await Get.find<ProfileController>().getProfileInfo();
+        if (profileResponse.statusCode == 200) {
+          if (Get.find<AuthController>().getZoneId() == '') {
+            Get.offAll(() => const AccessLocationScreen());
+          } else {
+            Get.offAll(() => const DashboardScreen());
+          }
+          PusherHelper()
+              .driverTripRequestSubscribe(profileResponse.body['data']['id']);
+        }
+      });
+    } else if (response != null) {
+      ApiChecker.checkApi(response);
+    }
+
     _isLoading = false;
     update();
   }

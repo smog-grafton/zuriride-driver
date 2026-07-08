@@ -4,6 +4,13 @@ import 'package:ride_sharing_user_app/features/auth/domain/models/signup_body.da
 
 abstract class AuthServiceInterface {
   Future<dynamic> login({required String phone, required String password});
+  Future<dynamic> socialLogin({
+    required String token,
+    required String uniqueId,
+    required String email,
+    required String medium,
+  });
+  Future<dynamic> directLogin({required String phone});
   Future<dynamic> logOut();
   Future<dynamic> registration(
       {required SignUpBody signUpBody,

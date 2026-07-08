@@ -4,8 +4,11 @@ import 'package:just_the_tooltip/just_the_tooltip.dart';
 import 'package:ride_sharing_user_app/features/face_verification/controllers/face_verification_controller.dart';
 import 'package:ride_sharing_user_app/features/face_verification/widgets/home_face_verification_warning_widget.dart';
 import 'package:ride_sharing_user_app/features/home/screens/ride_list_screen.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/document_request_alert_widget.dart';
+import 'package:ride_sharing_user_app/features/home/widgets/driver_money_cards_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/home_referral_view_widget.dart';
 import 'package:ride_sharing_user_app/features/home/widgets/refund_alert_bottomsheet.dart';
+import 'package:ride_sharing_user_app/helper/notification_helper.dart';
 import 'package:ride_sharing_user_app/features/notification/widgets/notification_shimmer_widget.dart';
 import 'package:ride_sharing_user_app/features/out_of_zone/controllers/out_of_zone_controller.dart';
 import 'package:ride_sharing_user_app/features/out_of_zone/screens/out_of_zone_map_screen.dart';
@@ -78,6 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     loadData();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationHelper.maybePromptFloatingAlerts();
+    });
 
     super.initState();
   }
@@ -322,6 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   )
                                 ]),
                               ),
+                            const DocumentRequestAlertWidget(),
+                            const DriverMoneyCardsWidget(),
                             if (Get.find<ProfileController>()
                                     .profileInfo
                                     ?.vehicle !=

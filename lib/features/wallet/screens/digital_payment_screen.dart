@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:ride_sharing_user_app/common_widgets/button_widget.dart';
 import 'package:ride_sharing_user_app/features/profile/controllers/profile_controller.dart';
+import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
+import 'package:ride_sharing_user_app/util/dimensions.dart';
 import 'package:ride_sharing_user_app/util/app_constants.dart';
+import 'package:ride_sharing_user_app/util/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DigitalPaymentScreen extends StatefulWidget {
@@ -21,7 +25,8 @@ class DigitalPaymentScreen extends StatefulWidget {
 class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
   String? selectedUrl;
   double value = 0.0;
-  final bool _isLoading = true;
+  bool _isLoading = true;
+  final TextEditingController _phoneController = TextEditingController();
 
   PullToRefreshController? pullToRefreshController;
   late AddFundInAppBrowser browser;
@@ -29,10 +34,22 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
   @override
   void initState() {
     super.initState();
+    _phoneController.text = Get.find<ProfileController>().profileInfo?.phone ?? '';
+
+    if (widget.paymentMethod == 'iotec') {
+      _isLoading = false;
+      return;
+    }
 
     selectedUrl =
         '${AppConstants.baseUrl}${AppConstants.digitalPayment}?user_id=${Get.find<ProfileController>().profileInfo?.id}&amount=${widget.totalAmount}&payment_method=${widget.paymentMethod}';
     _initData();
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
   }
 
   void _initData() async {
@@ -64,9 +81,14 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
         },
         child: Scaffold(
           appBar: AppBar(
-              title: const Text(''),
+              title: Text(widget.paymentMethod == 'iotec' ? 'deposit'.tr : ''),
               backgroundColor: Theme.of(context).cardColor),
-          body: Center(
+          body: widget.paymentMethod == 'iotec'
+              ? _IotecDepositForm(
+                  amount: widget.totalAmount,
+                  phoneController: _phoneController,
+                )
+              : Center(
               child: _isLoading
                   ? SpinKitCircle(
                       color: Theme.of(context).primaryColor,
@@ -76,6 +98,147 @@ class _DigitalPaymentScreenState extends State<DigitalPaymentScreen> {
         ),
       ),
     );
+  }
+}
+
+class _IotecDepositForm extends StatelessWidget {
+  final String amount;
+  final TextEditingController phoneController;
+
+  const _IotecDepositForm({
+    required this.amount,
+    required this.phoneController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<WalletController>(builder: (walletController) {
+      final String? status = walletController.latestIotecStatus;
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('deposit_cash_collected'.tr, style: textSemiBold),
+                  const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+                  Text('amount_owed_to_company'.tr,
+                      style: textRegular.copyWith(
+                          fontSize: Dimensions.fontSizeSmall,
+                          color: Theme.of(context).hintColor)),
+                  const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+                  Text(amount,
+                      style: textBold.copyWith(
+                          fontSize: Dimensions.fontSizeExtraLarge,
+                          color: Theme.of(context).primaryColor)),
+                ],
+              ),
+            ),
+            const SizedBox(height: Dimensions.paddingSizeLarge),
+
+            Text('mobile_money_number'.tr, style: textSemiBold),
+            const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+            Text('a_payment_request_will_be_sent_to_this_number'.tr,
+                style: textRegular.copyWith(
+                    fontSize: Dimensions.fontSizeSmall,
+                    color: Theme.of(context).hintColor)),
+            const SizedBox(height: Dimensions.paddingSizeSmall),
+            TextField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: 'enter_mobile_money_number'.tr,
+                filled: true,
+                fillColor: Theme.of(context).cardColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                ),
+              ),
+            ),
+
+            if (status != null) ...[
+              const SizedBox(height: Dimensions.paddingSizeDefault),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                decoration: BoxDecoration(
+                  color: (status == 'confirmed'
+                          ? Colors.green
+                          : status == 'failed'
+                              ? Theme.of(context).colorScheme.error
+                              : Colors.orange)
+                      .withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                ),
+                child: Row(children: [
+                  Icon(
+                    status == 'confirmed'
+                        ? Icons.check_circle
+                        : status == 'failed'
+                            ? Icons.error
+                            : Icons.hourglass_top,
+                    size: 18,
+                    color: status == 'confirmed'
+                        ? Colors.green
+                        : status == 'failed'
+                            ? Theme.of(context).colorScheme.error
+                            : Colors.orange,
+                  ),
+                  const SizedBox(width: Dimensions.paddingSizeSmall),
+                  Expanded(
+                    child: Text(
+                      status == 'confirmed'
+                          ? 'payment_confirmed'.tr
+                          : status == 'failed'
+                              ? 'payment_failed_please_try_again'.tr
+                              : 'payment_pending_confirm_on_your_phone'.tr,
+                      style: textRegular.copyWith(fontSize: Dimensions.fontSizeSmall),
+                    ),
+                  ),
+                ]),
+              ),
+            ],
+            const SizedBox(height: Dimensions.paddingSizeLarge),
+
+            ButtonWidget(
+              buttonText: walletController.isLoading
+                  ? 'loading'.tr
+                  : 'pay_company'.tr,
+              onPressed: walletController.isLoading
+                  ? null
+                  : () {
+                      final phone = phoneController.text.trim();
+                      if (phone.isEmpty) {
+                        showCustomSnackBar('please_submit_a_valid_phone_number'.tr);
+                        return;
+                      }
+                      walletController.depositViaIotec(amount, phone);
+                    },
+            ),
+            const SizedBox(height: Dimensions.paddingSizeSmall),
+            ButtonWidget(
+              buttonText: 'check_payment_status'.tr,
+              transparent: true,
+              showBorder: true,
+              onPressed: walletController.isLoading ||
+                      walletController.latestIotecPaymentId == null
+                  ? null
+                  : walletController.checkIotecPaymentStatus,
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 

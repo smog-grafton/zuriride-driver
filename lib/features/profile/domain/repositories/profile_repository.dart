@@ -22,6 +22,23 @@ class ProfileRepository implements ProfileRepositoryInterface {
   }
 
   @override
+  Future<Response?> getDriverDocumentRequests() async {
+    return await apiClient.getData(AppConstants.driverDocumentRequests);
+  }
+
+  @override
+  Future<Response?> submitDriverDocumentRequest(
+      String requestId, List<MultipartBody> files) async {
+    return await apiClient.postMultipartData(
+      '${AppConstants.driverDocumentRequests}/$requestId/submit',
+      {},
+      files,
+      null,
+      [],
+    );
+  }
+
+  @override
   Future<Response?> dailyLog() async {
     return await apiClient.getData(AppConstants.trackDriverLog);
   }
@@ -44,17 +61,21 @@ class ProfileRepository implements ProfileRepositoryInterface {
 
   @override
   Future<Response?> addNewVehicle(
-      VehicleBody vehicleBody, List<MultipartDocument> file) async {
+      VehicleBody vehicleBody, List<MultipartDocument> file,
+      List<MultipartBody> vehiclePhotos) async {
     return await apiClient.postMultipartData(
-        AppConstants.addNewVehicle, vehicleBody.toJson(), [], null, file);
+        AppConstants.addNewVehicle, vehicleBody.toJson(), vehiclePhotos, null, file);
   }
 
   @override
   Future<Response?> updateVehicle(
-      VehicleBody vehicleBody, String driverId) async {
-    return await apiClient.postData(
+      VehicleBody vehicleBody, String driverId, List<MultipartBody> vehiclePhotos) async {
+    return await apiClient.postMultipartData(
       AppConstants.updateVehicle + driverId,
       vehicleBody.toJson(),
+      vehiclePhotos,
+      null,
+      [],
     );
   }
 

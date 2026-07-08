@@ -1,48 +1,40 @@
 {
   "project_info": {
-    "project_number": "924616565334",
-    "project_id": "zuriride-beaed",
-    "storage_bucket": "zuriride-beaed.firebasestorage.app"
+    "project_number": "336045871661",
+    "project_id": "zuriride-opp-63ad0",
+    "storage_bucket": "zuriride-opp-63ad0.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:924616565334:android:384f28f6cee84f9ae011f7",
+        "mobilesdk_app_id": "1:336045871661:android:2fa0bb51f359fe9c539ea4",
         "android_client_info": {
           "package_name": "com.smogcoderz.zuriride"
         }
       },
       "oauth_client": [
         {
-          "client_id": "924616565334-u2qvqugcjg8dnnhvkr1skjlkts60bbs7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.smogcoderz.zuriride",
-            "certificate_hash": "79a183782e0a7b26d1fa1e101e5069947c63fd84"
-          }
-        },
-        {
-          "client_id": "924616565334-a5rv5opgc8rh8olmb3bq2m5n67e055o1.apps.googleusercontent.com",
+          "client_id": "336045871661-rg9k51km6fu6k4eaia5nmofesnnvmrcd.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBVvg_bfE6R3mi_xFe4m3nNUJAgBDbqNHI"
+          "current_key": "AIzaSyCFm5WG9B3V7hJEmuMuVcJ0ZMs1PsF6tLA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "924616565334-a5rv5opgc8rh8olmb3bq2m5n67e055o1.apps.googleusercontent.com",
+              "client_id": "336045871661-rg9k51km6fu6k4eaia5nmofesnnvmrcd.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "924616565334-3r8kol4kbpj5ommf3i4ta38ufpuu6dpn.apps.googleusercontent.com",
+              "client_id": "336045871661-43mm1vaml0d8fcos92omgp67lgel9uf1.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.smogcoderz.zuriride"
+                "bundle_id": "com.zuriride.com.zuridriver"
               }
             }
           ]
@@ -51,34 +43,34 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:924616565334:android:281bdd0e0620ece8e011f7",
+        "mobilesdk_app_id": "1:336045871661:android:a61de0c48d95e8a9539ea4",
         "android_client_info": {
           "package_name": "com.zuriride.com.zuridriver"
         }
       },
       "oauth_client": [
         {
-          "client_id": "924616565334-a5rv5opgc8rh8olmb3bq2m5n67e055o1.apps.googleusercontent.com",
+          "client_id": "336045871661-rg9k51km6fu6k4eaia5nmofesnnvmrcd.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBVvg_bfE6R3mi_xFe4m3nNUJAgBDbqNHI"
+          "current_key": "AIzaSyCFm5WG9B3V7hJEmuMuVcJ0ZMs1PsF6tLA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "924616565334-a5rv5opgc8rh8olmb3bq2m5n67e055o1.apps.googleusercontent.com",
+              "client_id": "336045871661-rg9k51km6fu6k4eaia5nmofesnnvmrcd.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "924616565334-3r8kol4kbpj5ommf3i4ta38ufpuu6dpn.apps.googleusercontent.com",
+              "client_id": "336045871661-43mm1vaml0d8fcos92omgp67lgel9uf1.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.smogcoderz.zuriride"
+                "bundle_id": "com.zuriride.com.zuridriver"
               }
             }
           ]

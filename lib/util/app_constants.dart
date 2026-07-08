@@ -5,13 +5,15 @@ class AppConstants {
   static const String appName = 'Zuri Driver';
   static const String baseUrl = 'https://zuriride.com';
   static const String polylineMapKey =
-      'AIzaSyC40Q_xELj7koarpfKSvCh1dlrwKdkaw5U';
-  static const double appVersion = 3.2;
+      'AIzaSyAB8VvO8EuzDETo7j8Hp205XkX3DgCjqFg';
+  static const String appVersion = '3.2.5';
 
   /// Flutter SDK 3.41.4
   static const String configUri = '/api/driver/configuration';
   static const String registration = '/api/driver/auth/registration';
   static const String loginUri = '/api/driver/auth/login';
+  static const String socialLogin = '/api/driver/auth/social-login';
+  static const String directLogin = '/api/driver/auth/direct-login';
   static const String logout = '/api/user/logout';
   static const String permanentDelete = '/api/user/delete';
   static const String sendOtp = '/api/driver/auth/send-otp';
@@ -21,6 +23,7 @@ class AppConstants {
   static const String onlineOfflineStatus = '/api/driver/update-online-status';
   static const String profileInfo = '/api/driver/info';
   static const String updateProfileInfo = '/api/driver/update/profile';
+  static const String driverDocumentRequests = '/api/driver/document-requests';
   static const String vehicleBrandList =
       '/api/driver/vehicle/brand/list?offset=';
   static const String vehicleModelList =
@@ -144,6 +147,8 @@ class AppConstants {
   static const String getPaymentMethods =
       '/api/driver/config/get-payment-methods';
   static const String digitalPayment = '/api/driver/pay-digitally';
+  static const String iotecDriverDeposit = '/api/payment/iotec/driver-deposit';
+  static const String iotecPaymentStatus = '/api/payment/iotec/status/';
   static const String faceVeryUri = '/api/driver/face-verification/verify';
   static const String skipFaceVerify = '/api/driver/face-verification/skip';
   static const String rideTrackingUrl = '/api/track/';
@@ -177,6 +182,8 @@ class AppConstants {
 
   // Shared Key
   static const String theme = 'theme';
+  static const String floatingOverlayEnabled = 'floating_overlay_enabled';
+  static const String floatingOverlayPrompted = 'floating_overlay_prompted';
   static const String token = 'token';
   static const String deviceToken = 'deviceToken';
   static const String countryCode = 'country_code';

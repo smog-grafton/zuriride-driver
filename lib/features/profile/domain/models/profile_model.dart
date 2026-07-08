@@ -261,7 +261,9 @@ class Level {
 class Vehicle {
   String? id;
   Brand? brand;
+  String? brandName;
   VehicleModels? model;
+  String? modelName;
   Category? category;
   String? licencePlateNumber;
   String? licenceExpireDate;
@@ -270,6 +272,7 @@ class Vehicle {
   String? fuelType;
   String? ownership;
   List<String>? documents;
+  List<String>? photos;
   int? isActive;
   String? createdAt;
   String? vehicleRequestStatus;
@@ -279,7 +282,9 @@ class Vehicle {
   Vehicle(
       {this.id,
       this.brand,
+      this.brandName,
       this.model,
+      this.modelName,
       this.category,
       this.licencePlateNumber,
       this.licenceExpireDate,
@@ -288,6 +293,7 @@ class Vehicle {
       this.fuelType,
       this.ownership,
       this.documents,
+      this.photos,
       this.isActive,
       this.createdAt,
       this.parcelWeightCapacity,
@@ -296,8 +302,10 @@ class Vehicle {
 
   Vehicle.fromJson(Map<String, dynamic> json) {
     brand = json['brand'] != null ? Brand.fromJson(json['brand']) : null;
+    brandName = json['brand_name'];
     model =
         json['model'] != null ? VehicleModels.fromJson(json['model']) : null;
+    modelName = json['model_name'];
     category =
         json['category'] != null ? Category.fromJson(json['category']) : null;
     licencePlateNumber = json['licence_plate_number'];
@@ -307,7 +315,8 @@ class Vehicle {
     transmission = json['transmission'];
     fuelType = json['fuel_type'];
     ownership = json['ownership'];
-    documents = json['documents'].cast<String>();
+    documents = (json['documents'] ?? []).cast<String>();
+    photos = (json['photos'] ?? []).cast<String>();
     isActive = int.tryParse(json['is_active'].toString());
     createdAt = json['created_at'];
     vehicleRequestStatus = json['vehicle_request_status'];
@@ -322,9 +331,11 @@ class Vehicle {
     if (brand != null) {
       data['brand'] = brand!.toJson();
     }
+    data['brand_name'] = brandName;
     if (model != null) {
       data['model'] = model!.toJson();
     }
+    data['model_name'] = modelName;
     if (category != null) {
       data['category'] = category!.toJson();
     }
@@ -335,6 +346,7 @@ class Vehicle {
     data['fuel_type'] = fuelType;
     data['ownership'] = ownership;
     data['documents'] = documents;
+    data['photos'] = photos;
     data['is_active'] = isActive;
     data['created_at'] = createdAt;
     return data;

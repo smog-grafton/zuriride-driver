@@ -24,6 +24,7 @@ import 'package:ride_sharing_user_app/util/images.dart';
 import 'package:ride_sharing_user_app/features/auth/controllers/auth_controller.dart';
 import 'package:ride_sharing_user_app/features/location/controllers/location_controller.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/categoty_model.dart';
+import 'package:ride_sharing_user_app/features/profile/domain/models/driver_document_request_model.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/profile_model.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/reward_model.dart';
 import 'package:ride_sharing_user_app/features/profile/domain/models/vehicle_brand_model.dart';
@@ -51,9 +52,11 @@ class ProfileController extends GetxController implements GetxService {
   int get profileTypeIndex => _profileTypeIndex;
   List<int> profileTypeIndexList = [];
   List<MultipartDocument> documents = [];
+  List<MultipartBody> vehiclePhotos = [];
   FilePickerResult? _otherFile;
   FilePickerResult? get otherFile => _otherFile;
   List<FilePickerResult> listOfDocuments = [];
+  List<PlatformFile> listOfVehiclePhotos = [];
   PlatformFile? objFile;
   List<String>? oldDocuments;
   bool isFirstTimeShowBottomSheet = true;
@@ -134,6 +137,7 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   ProfileInfo? profileInfo;
+  List<DriverDocumentRequestModel> driverDocumentRequests = [];
 
   String driverName = '';
   String driverImage = '';
@@ -151,6 +155,7 @@ class ProfileController extends GetxController implements GetxService {
       driverImage = profileInfo!.profileImage ?? '';
       isOnline = profileInfo?.details?.isOnline ?? '0';
       oldDocuments = profileInfo?.documents;
+      getDriverDocumentRequests();
       if (isOnline == "1") {
         LocationPermission permission = await Geolocator.checkPermission();
         if (permission == LocationPermission.denied ||
@@ -175,6 +180,39 @@ class ProfileController extends GetxController implements GetxService {
         stopLocationRecord();
       }
     } else {
+      ApiChecker.checkApi(response);
+    }
+    isLoading = false;
+    update();
+    return response;
+  }
+
+  Future<void> getDriverDocumentRequests() async {
+    Response? response = await profileServiceInterface.getDriverDocumentRequests();
+    if (response?.statusCode == 200) {
+      final data = response?.body['data'];
+      driverDocumentRequests = data is List
+          ? data
+              .map((item) => DriverDocumentRequestModel.fromJson(
+                  Map<String, dynamic>.from(item)))
+              .toList()
+          : [];
+      update();
+    }
+  }
+
+  Future<Response?> submitDriverDocumentRequest(
+      String requestId, List<MultipartBody> files) async {
+    isLoading = true;
+    update();
+    Response? response = await profileServiceInterface
+        .submitDriverDocumentRequest(requestId, files);
+    if (response?.statusCode == 200) {
+      showCustomSnackBar('document_submitted_successfully'.tr,
+          isError: false);
+      await getProfileInfo();
+      await getDriverDocumentRequests();
+    } else if (response != null) {
       ApiChecker.checkApi(response);
     }
     isLoading = false;
@@ -236,6 +274,17 @@ class ProfileController extends GetxController implements GetxService {
   }
 
   Future<Response> profileOnlineOffline(bool value) async {
+    // Document-locked drivers cannot go online for trips; they can still use
+    // the rest of the app (documents, deposits, wallet).
+    if (isOnline == "0" &&
+        (profileInfo?.isSuspended ?? false) &&
+        profileInfo?.suspendReason == 'document_request') {
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back();
+      }
+      showCustomSnackBar('your_account_is_locked_for_document_request'.tr);
+      return Response(statusCode: 403);
+    }
     isLoading = true;
     update();
     Response? response = await profileServiceInterface.profileOnlineOffline();
@@ -395,7 +444,8 @@ class ProfileController extends GetxController implements GetxService {
     creating = true;
     update();
     Response? response =
-        await profileServiceInterface.addNewVehicle(vehicleBody, documents);
+        await profileServiceInterface.addNewVehicle(
+            vehicleBody, documents, vehiclePhotos);
     if (response!.statusCode == 200) {
       creating = false;
       Get.find<ProfileController>().updateFaceVerificationBottomSheet(false);
@@ -418,7 +468,8 @@ class ProfileController extends GetxController implements GetxService {
     creating = true;
     update();
     Response? response =
-        await profileServiceInterface.updateVehicle(vehicleBody, driverId);
+        await profileServiceInterface.updateVehicle(
+            vehicleBody, driverId, vehiclePhotos);
     if (response!.statusCode == 200) {
       creating = false;
       getProfileInfo().then((value) {
@@ -437,6 +488,9 @@ class ProfileController extends GetxController implements GetxService {
 
   void clearVehicleData() {
     listOfDocuments = [];
+    documents = [];
+    listOfVehiclePhotos = [];
+    vehiclePhotos = [];
   }
 
   File? selectedFileForImport = File('');
@@ -481,6 +535,39 @@ class ProfileController extends GetxController implements GetxService {
   void removeFile(int index) async {
     listOfDocuments.removeAt(index);
     documents.removeAt(index);
+    update();
+  }
+
+  Future<bool> pickVehiclePhoto(bool isRemove) async {
+    if (isRemove) {
+      listOfVehiclePhotos = [];
+      vehiclePhotos = [];
+    } else {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withReadStream: true,
+        allowMultiple: true,
+      );
+      if (result != null) {
+        for (final photo in result.files) {
+          if (await FileValidationHelper.validatePlatformFileSizeAsync(
+              file: photo)) {
+            listOfVehiclePhotos.add(photo);
+            vehiclePhotos.add(MultipartBody(
+              'vehicle_photos[]',
+              XFile(photo.path!),
+            ));
+          }
+        }
+      }
+    }
+    update();
+    return true;
+  }
+
+  void removeVehiclePhoto(int index) {
+    listOfVehiclePhotos.removeAt(index);
+    vehiclePhotos.removeAt(index);
     update();
   }
 

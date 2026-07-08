@@ -29,6 +29,8 @@ class VehicleAddScreen extends StatefulWidget {
 
 class _VehicleAddScreenState extends State<VehicleAddScreen> {
   TextEditingController licencePlateNumberController = TextEditingController();
+  TextEditingController brandNameController = TextEditingController();
+  TextEditingController modelNameController = TextEditingController();
   TextEditingController licenceExpiryDateController = TextEditingController();
   TextEditingController vinNumberController = TextEditingController();
   TextEditingController transmissionController = TextEditingController();
@@ -36,6 +38,8 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
   final ScrollController _scrollController = ScrollController();
 
   FocusNode licencePlateFocus = FocusNode();
+  FocusNode brandNameFocus = FocusNode();
+  FocusNode modelNameFocus = FocusNode();
   FocusNode licenceExpiryFocus = FocusNode();
   FocusNode vinNumberFocus = FocusNode();
   FocusNode transmissionFocus = FocusNode();
@@ -53,6 +57,8 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
     Get.find<ProfileController>().clearVehicleData();
     if(widget.vehicleInfo != null){
       licencePlateNumberController.text = widget.vehicleInfo!.licencePlateNumber!;
+      brandNameController.text = widget.vehicleInfo?.brand?.name ?? widget.vehicleInfo?.brandName ?? '';
+      modelNameController.text = widget.vehicleInfo?.model?.name ?? widget.vehicleInfo?.modelName ?? '';
       Get.find<ProfileController>().setStartDate(DateTime.parse(widget.vehicleInfo!.licenceExpireDate!));
       Get.find<ProfileController>().setFuelType(widget.vehicleInfo!.fuelType!, false);
       parcelWeightCapacity.text = (widget.vehicleInfo?.parcelWeightCapacity ?? '').toString();
@@ -123,6 +129,17 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
 
                       TextFieldTitleWidget(title: 'vehicle_brand'.tr, isRequired: true),
 
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall),
+                        child: Text(
+                          'select_from_list_or_type_your_own'.tr,
+                          style: textRegular.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
+                      ),
+
                       if(profileController.brandList.isNotEmpty)
                         Container(
                           width: Get.width,
@@ -150,6 +167,36 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                             value: profileController.selectedBrand ?? Brand(id: 'abc', name: 'Select Brand Model'),
                           ),
                         ),
+
+                      if((profileController.selectedBrand?.id ?? 'abc') == 'abc') ...[
+                      TextFieldTitleWidget(title: 'custom_vehicle_brand'.tr),
+                      TextField(
+                        controller: brandNameController,
+                        focusNode: brandNameFocus,
+                        style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyMedium?.color),
+                        textInputAction: TextInputAction.next,
+                        cursorColor: Theme.of(context).primaryColor,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(width: 0.5, color: Theme.of(context).hintColor.withValues(alpha: 0.5)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(width: 0.5, color: Theme.of(context).primaryColor),
+                          ),
+                          hintText: 'enter_vehicle_brand'.tr,
+                          fillColor: Theme.of(context).cardColor,
+                          hintStyle: textRegular.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5),
+                          ),
+                          filled: true,
+                        ),
+                        onSubmitted: (text) => FocusScope.of(context).requestFocus(modelNameFocus),
+                      ),
+                      ],
 
                       if(profileController.modelList.isNotEmpty)
                         TextFieldTitleWidget(title: 'vehicle_model'.tr, isRequired: true),
@@ -180,6 +227,36 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                             value: profileController.selectedModel,
                           ),
                         ),
+
+                      if((profileController.selectedModel.id ?? 'abc') == 'abc') ...[
+                      TextFieldTitleWidget(title: 'custom_vehicle_model'.tr),
+                      TextField(
+                        controller: modelNameController,
+                        focusNode: modelNameFocus,
+                        style: textRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).textTheme.bodyMedium?.color),
+                        textInputAction: TextInputAction.next,
+                        cursorColor: Theme.of(context).primaryColor,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(width: 0.5, color: Theme.of(context).hintColor.withValues(alpha: 0.5)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(width: 0.5, color: Theme.of(context).primaryColor),
+                          ),
+                          hintText: 'enter_vehicle_model'.tr,
+                          fillColor: Theme.of(context).cardColor,
+                          hintStyle: textRegular.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5),
+                          ),
+                          filled: true,
+                        ),
+                        onSubmitted: (text) => FocusScope.of(context).requestFocus(licencePlateFocus),
+                      ),
+                      ],
 
                       TextFieldTitleWidget(title: 'vehicle_category'.tr, isRequired: true),
                       if(profileController.categoryList.isNotEmpty)
@@ -328,6 +405,81 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                         ),
                       ),
 
+                      TextFieldTitleWidget(title: 'vehicle_photos'.tr),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, Dimensions.paddingSizeDefault, 0, 0),
+                        child: DottedBorder(
+                          options: RoundedRectDottedBorderOptions(
+                            dashPattern: const [4,5],
+                            color: Theme.of(context).hintColor,
+                            radius: const Radius.circular(10),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall),
+                            ),
+                            child: InkWell(
+                              onTap: () async {
+                                bool res = await profileController.pickVehiclePhoto(false);
+                                if(res){
+                                  _scrollDown();
+                                }
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(width: 50, child: Image.asset(Images.upload)),
+                                  Text('upload_vehicle_photos'.tr),
+                                  Text('upload_file'.tr, style: textRegular.copyWith()),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      if(profileController.listOfVehiclePhotos.isNotEmpty)
+                        ListView.builder(
+                          itemCount: profileController.listOfVehiclePhotos.length,
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index){
+                            return InkWell(
+                              onTap: ()=> profileController.removeVehiclePhoto(index),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, Dimensions.paddingSizeDefault, 0, 0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraLarge),
+                                    color: Theme.of(context).cardColor,
+                                    boxShadow: [BoxShadow(
+                                      color: Theme.of(context).hintColor.withValues(alpha: .25),
+                                      spreadRadius: 1, blurRadius: 1, offset: const Offset(0,1),
+                                    )],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
+                                    child: Row(children: [
+                                      SizedBox(width: Dimensions.iconSizeMedium, child: Image.asset(Images.clip)),
+                                      const SizedBox(width: Dimensions.paddingSizeSmall),
+                                      Expanded(child: Text(
+                                        profileController.listOfVehiclePhotos[index].name,
+                                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                                      )),
+                                      const Icon(Icons.clear, color: Colors.red, size: 20),
+                                    ]),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
                       if(widget.vehicleInfo == null)...[
                         TextFieldTitleWidget(title: 'other_documents'.tr, isRequired: true),
 
@@ -434,18 +586,22 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                 radius: Dimensions.radiusExtraLarge,
                 buttonText: widget.vehicleInfo == null ? 'send_request'.tr : 'update_and_send_request'.tr,
                 onPressed: (){
-                  String brandId = profileController.selectedBrand!.id!;
-                  String modelId = profileController.selectedModel.id!;
+                  String brandId = profileController.selectedBrand?.id ?? 'abc';
+                  String modelId = profileController.selectedModel.id ?? 'abc';
+                  String brandName = brandNameController.text.trim();
+                  String modelName = modelNameController.text.trim();
                   String categoryId = profileController.selectedCategory.id!;
                   String licencePlateNumber = licencePlateNumberController.text.trim();
                   String expireDate = profileController.dateFormat.format(profileController.startDate??DateTime.now()).toString();
                   String vinNumber = vinNumberController.text.trim();
                   String transmission = transmissionController.text.trim();
                   String fuelType = profileController.selectedFuelType;
-                  if(profileController.selectedBrand!.id == 'abc'){
-                    showCustomSnackBar('select_vehicle_brand'.tr);
-                  }else if(profileController.selectedModel.id == 'abc'){
-                    showCustomSnackBar('select_vehicle_model'.tr);
+                  bool customBrandRequired = brandId == 'abc';
+                  bool customModelRequired = modelId == 'abc';
+                  if(customBrandRequired && brandName.isEmpty){
+                    showCustomSnackBar('enter_vehicle_brand'.tr);
+                  }else if(customModelRequired && modelName.isEmpty){
+                    showCustomSnackBar('enter_vehicle_model'.tr);
                   }else if(profileController.selectedCategory.id == 'abc'){
                     showCustomSnackBar('select_vehicle_category'.tr);
                   }
@@ -457,8 +613,10 @@ class _VehicleAddScreenState extends State<VehicleAddScreen> {
                     showCustomSnackBar('fuel_type_is_required'.tr);
                   }else{
                     VehicleBody body = VehicleBody(
-                        brandId: brandId,
-                        modelId: modelId,
+                        brandId: customBrandRequired ? null : brandId,
+                        brandName: customBrandRequired ? brandName : null,
+                        modelId: customModelRequired ? null : modelId,
+                        modelName: customModelRequired ? modelName : null,
                         categoryId: categoryId,
                         licencePlateNumber: licencePlateNumber,
                         licenceExpireDate: expireDate,

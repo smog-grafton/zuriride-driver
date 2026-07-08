@@ -9,13 +9,15 @@ class ProfileService implements ProfileServiceInterface {
   ProfileService({required this.profileRepositoryInterface});
 
   @override
-  Future addNewVehicle(VehicleBody vehicleBody, List<MultipartDocument> file) {
-    return profileRepositoryInterface.addNewVehicle(vehicleBody, file);
+  Future addNewVehicle(VehicleBody vehicleBody, List<MultipartDocument> file,
+      List<MultipartBody> vehiclePhotos) {
+    return profileRepositoryInterface.addNewVehicle(vehicleBody, file, vehiclePhotos);
   }
 
   @override
-  Future updateVehicle(VehicleBody vehicleBody, String driverId) {
-    return profileRepositoryInterface.updateVehicle(vehicleBody, driverId);
+  Future updateVehicle(VehicleBody vehicleBody, String driverId,
+      List<MultipartBody> vehiclePhotos) {
+    return profileRepositoryInterface.updateVehicle(vehicleBody, driverId, vehiclePhotos);
   }
 
   @override
@@ -31,6 +33,16 @@ class ProfileService implements ProfileServiceInterface {
   @override
   Future getProfileInfo() {
     return profileRepositoryInterface.getProfileInfo();
+  }
+
+  @override
+  Future getDriverDocumentRequests() {
+    return profileRepositoryInterface.getDriverDocumentRequests();
+  }
+
+  @override
+  Future submitDriverDocumentRequest(String requestId, List<MultipartBody> files) {
+    return profileRepositoryInterface.submitDriverDocumentRequest(requestId, files);
   }
 
   @override

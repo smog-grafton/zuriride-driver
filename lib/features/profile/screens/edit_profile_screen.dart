@@ -174,7 +174,7 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                                 : null,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: Dimensions.paddingSizeSmall),
-                            title: Text('ride_share'.tr,
+                            title: Text('service_ride_driver'.tr,
                                 style: textBold.copyWith(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -213,7 +213,7 @@ class ProfileEditScreenState extends State<ProfileEditScreen>
                                 : null,
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: Dimensions.paddingSizeSmall),
-                            title: Text('parcel_delivery'.tr,
+                            title: Text('service_delivery_driver'.tr,
                                 style: textBold.copyWith(
                                     fontSize: 12,
                                     color: Theme.of(context)

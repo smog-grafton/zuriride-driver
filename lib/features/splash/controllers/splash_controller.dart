@@ -5,6 +5,8 @@ import 'package:ride_sharing_user_app/features/splash/domain/models/config_model
 import 'package:ride_sharing_user_app/data/api_checker.dart';
 import 'package:ride_sharing_user_app/features/splash/domain/services/splash_service_interface.dart';
 import 'package:ride_sharing_user_app/helper/display_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ride_sharing_user_app/util/app_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SplashController extends GetxController implements GetxService {
@@ -24,6 +26,7 @@ class SplashController extends GetxController implements GetxService {
       isSuccess = true;
       loading = false;
       _config = ConfigModel.fromJson(response.body);
+      _syncFloatingOverlaySetting();
     }else {
       loading = false;
       ApiChecker.checkApi(response);
@@ -32,6 +35,18 @@ class SplashController extends GetxController implements GetxService {
       update();
     }
     return isSuccess;
+  }
+
+  /// Persist the overlay flag so the FCM background isolate (which has no
+  /// access to controllers) can decide whether to show floating request
+  /// alerts. The permission itself is requested through an explanatory
+  /// dialog on the dashboard (NotificationHelper.maybePromptFloatingAlerts).
+  Future<void> _syncFloatingOverlaySetting() async {
+    try {
+      final bool enabled = _config?.driverFloatingOverlayEnabled ?? false;
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(AppConstants.floatingOverlayEnabled, enabled);
+    } catch (_) {}
   }
 
   Future<bool> initSharedData() {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,10 +20,25 @@ class RideRequestScreen extends StatefulWidget {
 }
 
 class _RideRequestScreenState extends State<RideRequestScreen> {
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     Get.find<RideController>().getPendingRideRequestList(1);
+    // Periodically refresh so expired requests disappear without a
+    // manual pull-to-refresh or app restart.
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && !Get.find<RideController>().isLoading) {
+        Get.find<RideController>().getPendingRideRequestList(1);
+      }
+    });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   final ScrollController scrollController = ScrollController();

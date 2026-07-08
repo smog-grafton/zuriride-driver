@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:ride_sharing_user_app/features/dashboard/screens/dashboard_screen.dart';
 import 'package:ride_sharing_user_app/features/home/screens/vehicle_add_screen.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/profile_details_widget.dart';
+import 'package:ride_sharing_user_app/features/profile/widgets/driver_document_request_widget.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/profile_level_details_widget.dart';
 import 'package:ride_sharing_user_app/features/profile/widgets/vehicle_details_widget.dart';
 import 'package:ride_sharing_user_app/features/wallet/controllers/wallet_controller.dart';
@@ -169,7 +170,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : const SizedBox(),
                       const SizedBox(height: Dimensions.paddingSizeExtraLarge),
                       profileController.profileTypeIndex == 0
-                          ? ProfileDetailsWidget()
+                          ? Column(children: [
+                              ProfileDetailsWidget(),
+                              const DriverDocumentRequestWidget(),
+                            ])
                           : profileController.profileTypeIndex == 2
                               ? VehicleDetailsWidget()
                               : profileController.profileTypeIndex == 1

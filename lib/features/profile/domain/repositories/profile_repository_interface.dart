@@ -7,13 +7,18 @@ import 'package:ride_sharing_user_app/interface/repository_interface.dart';
 abstract class ProfileRepositoryInterface implements RepositoryInterface {
   Future<Response?> profileOnlineOffline();
   Future<Response?> getProfileInfo();
+  Future<Response?> getDriverDocumentRequests();
+  Future<Response?> submitDriverDocumentRequest(
+      String requestId, List<MultipartBody> files);
   Future<Response?> dailyLog();
   Future<Response?> getVehicleModelList(int offset);
   Future<Response?> getVehicleBrandList(int offset);
   Future<Response?> getCategoryList(int offset);
   Future<Response?> addNewVehicle(
-      VehicleBody vehicleBody, List<MultipartDocument> file);
-  Future<Response?> updateVehicle(VehicleBody vehicleBody, String driverId);
+      VehicleBody vehicleBody, List<MultipartDocument> file,
+      List<MultipartBody> vehiclePhotos);
+  Future<Response?> updateVehicle(
+      VehicleBody vehicleBody, String driverId, List<MultipartBody> vehiclePhotos);
   Future<Response?> updateProfileInfo({
     required String firstName,
     required String lastname,

@@ -6,6 +6,13 @@ import 'package:ride_sharing_user_app/interface/repository_interface.dart';
 
 abstract class AuthRepositoryInterface implements RepositoryInterface {
   Future<Response?> login({required String phone, required String password});
+  Future<Response?> socialLogin({
+    required String token,
+    required String uniqueId,
+    required String email,
+    required String medium,
+  });
+  Future<Response?> directLogin({required String phone});
   Future<Response?> logOut();
   Future<Response> registration(
       {required SignUpBody signUpBody,
